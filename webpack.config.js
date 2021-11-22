@@ -1,27 +1,36 @@
 const path = require('path');
 const { resolve } = require('path');
+var webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     mode: 'development',
     entry: {
-        index: './src/index.js',
-        print: './src/print.js',
+        index: './src/app.ts',
     },
-    devtool: 'eval-cheap-module-source-map',
+    devtool: 'cheap-module-source-map',
     devServer: {
-        static: './dist',
+        static: {
+            serveIndex: true,
+            directory: __dirname,
+            watch: false
+        },
+        hot: true,
+        open: true
     },
     plugins: [
+        new webpack.HotModuleReplacementPlugin(),
         new HtmlWebpackPlugin({
           title: 'Development',
         }),
     ],
     output: {
-        filename: '[name].bundle.js',
+        filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
-        clean: true,
-        publicPath: '/',
+        publicPath: '/dist/'
+    },
+    resolve: {
+        extensions: ['.ts', '.js']
     },
     module: {
         rules: [
@@ -30,14 +39,13 @@ module.exports = {
                 use: ['style-loader', 'css-loader'],
             },
             {
-                test: /\.(js|mjs|jsx|ts|tsx)$/,
-                use: [{
-                    loader: 'ts-loader',
-                    options: {
-                        transpileOnly: true,
-                    },
-                }],
+                test: /\.ts$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
             },
         ],
     },
+    watchOptions: {
+        ignored: /node_modules/
+    }
 };
