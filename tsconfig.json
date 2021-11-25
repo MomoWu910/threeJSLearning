@@ -1,13 +1,23 @@
 {
-    "compilerOptions": {
-      "lib": [
-        "es2015",
-        "dom"
-      ],
-      "target": "es6",
-      "noImplicitAny": true,
-      "module": "commonjs",
-      "strict": true,
-      "types": ["webpack-env", "node"]
-    }
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "lib": [
+      "es2015",
+      "dom"
+    ],
+    "target": "es6",
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "three/examples/jsm/libs/dat.gui.module": [
+        "./node_modules/@types/dat.gui"
+      ]
+    },
+    "types": [
+      "webpack-env",
+      "node"
+    ]
   }
+}

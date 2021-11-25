@@ -5,6 +5,7 @@ import { MeshBasicMaterial, MeshNormalMaterial, MeshPhongMaterial } from 'three'
 import { DoubleSide, PCFSoftShadowMap } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Stats from 'three/examples/jsm/libs/stats.module';
+import { GUI } from 'three/examples/jsm/libs/dat.gui.module';
 
 export default class View {
 	private scene: any;
@@ -12,12 +13,15 @@ export default class View {
 	private renderer: any;
 	private controls: any;
 	private stats: any;
+	private gui: any;
 
 	private plane: any;
 	private cube: any;
 	private pointLight: any;
 	private pointLightHelper: any;
 	private directLight: any;
+
+	private rotateAngle: number = 0.01;
 
 	constructor() {
 
@@ -83,7 +87,8 @@ export default class View {
 		// this.directLight.shadow.camera.far = 500; // default
 		// this.scene.add(this.directLight);
 
-
+		this.gui = new GUI();
+		this.gui.add(this, 'rotateAngle', -1.0, 1.0);
 
 		this.render();
 	}
@@ -98,7 +103,7 @@ export default class View {
 		this.renderer.render(this.scene, this.camera);
 		requestAnimationFrame(() => this.render());
 
-		this.cube.rotation.y += 0.01;
+		this.cube.rotation.y += this.rotateAngle;
 
 		this.adjustCanvasSize();
 		this.controls.update();
