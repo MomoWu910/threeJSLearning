@@ -7,6 +7,8 @@ const grassTexture = '../../res/texture/grass.png';
 const grassBlackMapTexture = '../../res/texture/grassBlack.png';
 const grassWhiteMapTexture = '../../res/texture/grassWhite.png';
 const grassNormalMapTexture = '../../res/texture/grassNormal.png';
+const stoneTexture = '../../res/texture/stone.png';
+const stoneNTexture = '../../res/texture/stoneN.png';
 
 
 export default class View {
@@ -26,6 +28,7 @@ export default class View {
 	private directLight: any;
 
 	private rotateAngle: number = 0.01;
+	private normalScale: number = 1;
 	private angle: number = 0;
 	private clock = new THREE.Clock();
 
@@ -86,14 +89,17 @@ export default class View {
 		const grassBlack = new THREE.TextureLoader().load(grassBlackMapTexture);
 		const grassWhite = new THREE.TextureLoader().load(grassWhiteMapTexture);
 		const grassNormal = new THREE.TextureLoader().load(grassNormalMapTexture);
+		const stone = new THREE.TextureLoader().load(stoneTexture);
+		const stoneN = new THREE.TextureLoader().load(stoneNTexture);
 		const materialBasic = new THREE.MeshBasicMaterial({ color: 0x222222, side: THREE.DoubleSide });
 		const materialNormal = new THREE.MeshNormalMaterial();
-		const materialPhongGrass = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide, map: grass });
+		const materialPhongGrass = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide, map: grass, normalMap: grassNormal });
+		const materialPhongStone = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide, map: stone, normalMap: stoneN });
 		const materialPhong = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
 		const materialLambert = new THREE.MeshLambertMaterial({ color: 0x555555, side: THREE.DoubleSide });
 
 		const planeG = new THREE.PlaneGeometry(500, 500);
-		this.plane = new THREE.Mesh(planeG, materialPhongGrass);
+		this.plane = new THREE.Mesh(planeG, materialPhongStone);
 		this.plane.rotation.x = Math.PI / 2;
 		this.plane.position.y = -10;
 		// this.plane.castShadow = true;
@@ -111,6 +117,7 @@ export default class View {
 		//
 		this.gui = new GUI();
 		this.gui.add(this, 'rotateAngle', -1.0, 1.0);
+		this.gui.add(this, 'normalScale', 0, 1.0);
 
 		this.render();
 	}
@@ -136,6 +143,7 @@ export default class View {
 		requestAnimationFrame(() => this.render());
 
 		this.cube.rotation.y += this.rotateAngle;
+		this.plane.material.normalScale.set(this.normalScale, this.normalScale);
 		// this.cube.position.x += 0.5;
 
 		let dt = this.clock.getDelta();
