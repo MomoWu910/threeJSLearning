@@ -1,4 +1,5 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module';
 import * as THREE from 'three';
@@ -10,6 +11,7 @@ const grassNormalMapTexture = '../../res/texture/grassNormal.png';
 const stoneTexture = '../../res/texture/stone.png';
 const stoneNTexture = '../../res/texture/stoneN.png';
 
+const porscheGLTF = '../../res/model/porsche/scene.gltf';
 
 export default class View {
 	private scene: any;
@@ -32,8 +34,12 @@ export default class View {
 	private angle: number = 0;
 	private clock = new THREE.Clock();
 
+	private loader = new GLTFLoader();
+	private porsche: any;
+
 	constructor() {
 
+	//#region scene
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 10000);
 		this.renderer = new THREE.WebGLRenderer({
@@ -46,7 +52,7 @@ export default class View {
 
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
-		this.camera.position.set(300, 300, 300);
+		this.camera.position.set(500, 500, 500);
 		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 		this.scene.add(this.camera);
 
@@ -55,14 +61,16 @@ export default class View {
 
 		this.stats = Stats();
 		document.body.appendChild(this.stats.dom);
+	//#endregion
 
-		//
+	//#region light
 		const light = new THREE.AmbientLight(0x404040); // soft white light
 		this.scene.add(light);
 
-		this.spotLight = new THREE.SpotLight(0xFFFFFF, 2, 1000, Math.PI/9);
+		this.spotLight = new THREE.SpotLight(0xFFFFFF, 3, 1000, Math.PI/6);
 		this.spotLight.castShadow = true;
 		this.spotLight.position.set(0, 300, 300);
+		this.spotLight.shadow.bias = -0.0001; // 消除影子線條
 		this.spotLightHelper = new THREE.SpotLightHelper( this.spotLight );
 		this.scene.add(this.spotLight, this.spotLightHelper);
 
@@ -83,14 +91,20 @@ export default class View {
 		// this.directLight.shadow.camera.far = 2500; // default
 		// const helper = new THREE.DirectionalLightHelper( this.directLight, 500 );
 		// this.scene.add(this.directLight, helper);
+	//#endregion
 
-		////
+	//#region mesh
 		const grass = new THREE.TextureLoader().load(grassTexture);
-		const grassBlack = new THREE.TextureLoader().load(grassBlackMapTexture);
-		const grassWhite = new THREE.TextureLoader().load(grassWhiteMapTexture);
 		const grassNormal = new THREE.TextureLoader().load(grassNormalMapTexture);
 		const stone = new THREE.TextureLoader().load(stoneTexture);
+		stone.wrapS = THREE.RepeatWrapping;
+		stone.wrapT = THREE.RepeatWrapping;
+		stone.repeat.set( 4, 4 );
 		const stoneN = new THREE.TextureLoader().load(stoneNTexture);
+		stoneN.wrapS = THREE.RepeatWrapping;
+		stoneN.wrapT = THREE.RepeatWrapping;
+		stoneN.repeat.set( 4, 4 );
+
 		const materialBasic = new THREE.MeshBasicMaterial({ color: 0x222222, side: THREE.DoubleSide });
 		const materialNormal = new THREE.MeshNormalMaterial();
 		const materialPhongGrass = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide, map: grass, normalMap: grassNormal });
@@ -98,22 +112,44 @@ export default class View {
 		const materialPhong = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
 		const materialLambert = new THREE.MeshLambertMaterial({ color: 0x555555, side: THREE.DoubleSide });
 
-		const planeG = new THREE.PlaneGeometry(500, 500);
+		const planeG = new THREE.PlaneGeometry(1500, 1500);
 		this.plane = new THREE.Mesh(planeG, materialPhongStone);
 		this.plane.rotation.x = Math.PI / 2;
-		this.plane.position.y = -10;
 		// this.plane.castShadow = true;
 		this.plane.receiveShadow = true;
 		this.scene.add(this.plane);
 
 		const sphereGeometry = new THREE.SphereGeometry(50, 32, 32);
-		const boxGeometry = new THREE.BoxGeometry(50, 50, 50);
+		const boxGeometry = new THREE.BoxGeometry(20, 20, 20);
 		this.cube = new THREE.Mesh(boxGeometry, materialPhong);
-		this.cube.position.set(0, 100, 0);
+		this.cube.position.set(0, 90, 0);
 		this.cube.castShadow = true;
 		// this.cube.receiveShadow = true;
 		this.scene.add(this.cube);
+	//#endregion
 
+	//#region model
+		this.loader.load(porscheGLTF, (gltf) => {
+				// onload
+				this.porsche = gltf.scene;
+				this.scene.add(this.porsche);
+				this.porsche.scale.set(50, 50, 50);
+				console.log(this.porsche);
+				this.porsche.castShadow = true;
+				this.porsche.receiveShadow = true;
+				this.setObjCastShow(this.porsche);
+				this.setObjReceiveShow(this.porsche);
+			}, ( xhr ) => {
+				// onprogress
+				console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+			}, ( err) => {
+				// onerror
+				console.error(err);
+			}
+		);
+	//#endregion
+		
+		
 		//
 		this.gui = new GUI();
 		this.gui.add(this, 'rotateAngle', -1.0, 1.0);
@@ -131,6 +167,18 @@ export default class View {
             light1.shadow.mapSize.set(mapSz,mapSz)
         }
     }
+
+	private setObjReceiveShow(obj: any) {
+		obj.traverse((child: any) => {
+			if(child.isMesh) child.receiveShadow = true;
+		});
+	}
+
+	private setObjCastShow(obj: any) {
+		obj.traverse((child: any) => {
+			if(child.isMesh) child.castShadow = true;
+		});
+	}
 
 	private adjustCanvasSize() {
 		this.renderer.setSize(innerWidth, innerHeight);
