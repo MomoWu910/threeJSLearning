@@ -30,13 +30,15 @@ export default class View {
 	private pointLightHelper: any;
 	private directLight: any;
 
+	private lightSpeed: number = 5;
 	private rotateAngle: number = 0.01;
 	private normalScale: number = 1;
 	private angle: number = 0;
 	private clock = new THREE.Clock();
 
-	private loader = new GLTFLoader();
+	private loaderGLTF = new GLTFLoader();
 	private porsche: any;
+	private shiba: any;
 
 	constructor() {
 
@@ -68,9 +70,9 @@ export default class View {
 		const light = new THREE.AmbientLight(0x404040); // soft white light
 		this.scene.add(light);
 
-		this.spotLight = new THREE.SpotLight(0xFFFFFF, 3, 1000, Math.PI / 6);
+		this.spotLight = new THREE.SpotLight(0xFFFFFF, 3, 2000, Math.PI / 4, 0.5);
 		this.spotLight.castShadow = true;
-		this.spotLight.position.set(0, 300, 300);
+		this.spotLight.position.set(0, 300, 500);
 		this.spotLight.shadow.bias = -0.0001; // 消除影子線條
 		this.spotLightHelper = new THREE.SpotLightHelper(this.spotLight);
 		this.scene.add(this.spotLight, this.spotLightHelper);
@@ -123,24 +125,46 @@ export default class View {
 		const sphereGeometry = new THREE.SphereGeometry(50, 32, 32);
 		const boxGeometry = new THREE.BoxGeometry(20, 20, 20);
 		this.cube = new THREE.Mesh(boxGeometry, materialPhong);
-		this.cube.position.set(0, 90, 0);
+		this.cube.position.set(100, 100, 100);
 		this.cube.castShadow = true;
 		// this.cube.receiveShadow = true;
 		this.scene.add(this.cube);
 		//#endregion
 
 		//#region model
-		this.loader.load(shibaGLTF, (gltf) => {
+		this.shiba = this.loadGLTFModel(shibaGLTF, (shiba: any) => {
+			shiba.position.set(0, 100, 0);
+			shiba.scale.set(100, 100, 100);
+		});
+		
+		this.porsche = this.loadGLTFModel(porscheGLTF, (porsche: any) => {
+			porsche.position.set(200, 0, -200);
+			porsche.scale.set(100, 100, 100);
+			porsche.rotation.set(0, Math.PI/2, 0);
+		});
+		//#endregion
+
+
+		//
+		this.gui = new GUI();
+		this.gui.add(this, 'lightSpeed', 0.1, 5.0);
+		this.gui.add(this, 'rotateAngle', -1.0, 1.0);
+		this.gui.add(this, 'normalScale', 0, 1.0);
+
+		this.render();
+	}
+
+	 private async loadGLTFModel(path: string, callback: any) {
+		this.loaderGLTF.load(path, (gltf) => {
 			// onload
-			this.porsche = gltf.scene;
-			this.scene.add(this.porsche);
-			this.porsche.position.set(0, 100, 0);
-			this.porsche.scale.set(100, 100, 100);
-			console.log(this.porsche);
-			this.porsche.castShadow = true;
-			this.porsche.receiveShadow = true;
-			this.setObjCastShow(this.porsche);
-			this.setObjReceiveShow(this.porsche);
+			this.scene.add(gltf.scene);
+			gltf.scene.castShadow = true;
+			gltf.scene.receiveShadow = true;
+			this.setObjCastShow(gltf.scene);
+			this.setObjReceiveShow(gltf.scene);
+
+			if(callback) callback(gltf.scene);
+			return gltf.scene;
 		}, (xhr) => {
 			// onprogress
 			console.log((xhr.loaded / xhr.total * 100) + '% loaded');
@@ -148,16 +172,7 @@ export default class View {
 			// onerror
 			console.error(err);
 		}
-		);
-		//#endregion
-
-
-		//
-		this.gui = new GUI();
-		this.gui.add(this, 'rotateAngle', -1.0, 1.0);
-		this.gui.add(this, 'normalScale', 0, 1.0);
-
-		this.render();
+	);
 	}
 
 	private setShadowSize(light1: any, sz: number = 0, mapSz: number = 0) {
@@ -197,8 +212,8 @@ export default class View {
 		// this.cube.position.x += 0.5;
 
 		let dt = this.clock.getDelta();
-		this.angle += dt / 5;
-		this.spotLight.position.set(300 * Math.cos(-this.angle), 300, 300 * Math.sin(-this.angle));
+		this.angle += dt / this.lightSpeed;
+		this.spotLight.position.set(500 * Math.cos(-this.angle), 300, 500 * Math.sin(-this.angle));
 		this.spotLightHelper.update();
 
 
