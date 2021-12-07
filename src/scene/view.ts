@@ -11,8 +11,9 @@ const grassNormalMapTexture = '../../res/texture/grassNormal.png';
 const stoneTexture = '../../res/texture/stone.png';
 const stoneNTexture = '../../res/texture/stoneN.png';
 
-const porscheGLTF = '../../res/model/porsche/scene.gltf';
-const shibaGLTF = '../../res/model/shiba/scene.gltf';
+const porscheGLTF = '../../res/model/porsche/porsche.gltf';
+const shibaGLTF = '../../res/model/shiba/shiba.gltf';
+const godzillaGLTF = '../../res/model/godzilla/godzilla.gltf';
 
 export default class View {
 	private scene: any;
@@ -39,6 +40,7 @@ export default class View {
 	private loaderGLTF = new GLTFLoader();
 	private porsche: any;
 	private shiba: any;
+	private godzilla: any;
 
 	constructor() {
 
@@ -142,6 +144,12 @@ export default class View {
 			porsche.scale.set(100, 100, 100);
 			porsche.rotation.set(0, Math.PI/2, 0);
 		});
+
+		this.godzilla = this.loadGLTFModel(godzillaGLTF, (godzilla: any) => {
+			godzilla.position.set(-200, 0, -200);
+			godzilla.scale.set(0.4, 0.4, 0.4);
+		});
+
 		//#endregion
 
 
@@ -154,7 +162,7 @@ export default class View {
 		this.render();
 	}
 
-	 private async loadGLTFModel(path: string, callback: any) {
+	 private loadGLTFModel(path: string, callback: any) {
 		this.loaderGLTF.load(path, (gltf) => {
 			// onload
 			this.scene.add(gltf.scene);
