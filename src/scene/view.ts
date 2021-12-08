@@ -14,6 +14,7 @@ const stoneNTexture = '../../res/texture/stoneN.png';
 const porscheGLTF = '../../res/model/porsche/porsche.gltf';
 const shibaGLTF = '../../res/model/shiba/shiba.gltf';
 const godzillaGLTF = '../../res/model/godzilla/godzilla.gltf';
+const bananaGLTF = '../../res/model/banana/banana.glb';
 
 export default class View {
 	private scene: any;
@@ -41,6 +42,7 @@ export default class View {
 	private porsche: any;
 	private shiba: any;
 	private godzilla: any;
+	private banana: any;
 
 	constructor() {
 
@@ -79,23 +81,14 @@ export default class View {
 		this.spotLightHelper = new THREE.SpotLightHelper(this.spotLight);
 		this.scene.add(this.spotLight, this.spotLightHelper);
 
-		// this.pointLight = new THREE.PointLight(0xffffff, 1.2, 500);
-		// this.pointLightHelper = new THREE.PointLightHelper(this.pointLight, 10);
-		// this.pointLight.castShadow = true;
-		// this.pointLight.position.set(0, 150, 0);
-		// this.pointLight.shadow.mapSize.width = 512; // default
-		// this.pointLight.shadow.mapSize.height = 512; // default
-		// this.pointLight.shadow.camera.near = 0.5; // default
-		// this.pointLight.shadow.camera.far = 5000; // default
-		// this.scene.add(this.pointLight, this.pointLightHelper);
-
-		// this.directLight = new THREE.DirectionalLight(0xffffff, 1.2);
-		// this.directLight.castShadow = true;
-		// this.setShadowSize(this.directLight, 100, 1024);
-		// this.directLight.shadow.camera.near = 1200; // default
-		// this.directLight.shadow.camera.far = 2500; // default
-		// const helper = new THREE.DirectionalLightHelper( this.directLight, 500 );
-		// this.scene.add(this.directLight, helper);
+		this.directLight = new THREE.DirectionalLight(0xffffff, 1);
+		this.directLight.castShadow = true;
+		this.scene.add(this.directLight.target);
+		this.setShadowSize(this.directLight, 1000, 2048);// 目前版本directLight 需要設定光照範圍以及座標才能正確照到
+		this.directLight.position.set(0, 1.75, 0);
+		this.directLight.position.multiplyScalar(100);
+		this.directLight.shadow.camera.far = 10000;
+		// this.scene.add(this.directLight);
 		//#endregion
 
 		//#region mesh
@@ -138,11 +131,11 @@ export default class View {
 			shiba.position.set(0, 100, 0);
 			shiba.scale.set(100, 100, 100);
 		});
-		
+
 		this.porsche = this.loadGLTFModel(porscheGLTF, (porsche: any) => {
 			porsche.position.set(200, 0, -200);
 			porsche.scale.set(100, 100, 100);
-			porsche.rotation.set(0, Math.PI/2, 0);
+			porsche.rotation.set(0, Math.PI / 2, 0);
 		});
 
 		this.godzilla = this.loadGLTFModel(godzillaGLTF, (godzilla: any) => {
@@ -150,6 +143,10 @@ export default class View {
 			godzilla.scale.set(0.4, 0.4, 0.4);
 		});
 
+		this.banana = this.loadGLTFModel(bananaGLTF, (banana: any) => {
+			banana.position.set(0, 127, 0);
+			banana.scale.set(3, 3, 3);
+		})
 		//#endregion
 
 
@@ -162,7 +159,7 @@ export default class View {
 		this.render();
 	}
 
-	 private loadGLTFModel(path: string, callback: any) {
+	private loadGLTFModel(path: string, callback: any) {
 		this.loaderGLTF.load(path, (gltf) => {
 			// onload
 			this.scene.add(gltf.scene);
@@ -171,22 +168,24 @@ export default class View {
 			this.setObjCastShow(gltf.scene);
 			this.setObjReceiveShow(gltf.scene);
 
-			if(callback) callback(gltf.scene);
+			console.log(gltf.scene);
+
+			if (callback) callback(gltf.scene);
 			return gltf.scene;
 		}, (xhr) => {
 			// onprogress
-			console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+			// console.log((xhr.loaded / xhr.total * 100) + '% loaded');
 		}, (err) => {
 			// onerror
 			console.error(err);
 		}
-	);
+		);
 	}
 
 	private setShadowSize(light1: any, sz: number = 0, mapSz: number = 0) {
-		light1.shadow.camera.left = sz;
+		light1.shadow.camera.left = -sz;
 		light1.shadow.camera.bottom = sz;
-		light1.shadow.camera.right = -sz;
+		light1.shadow.camera.right = sz;
 		light1.shadow.camera.top = -sz;
 		if (mapSz) {
 			light1.shadow.mapSize.set(mapSz, mapSz)
@@ -195,7 +194,16 @@ export default class View {
 
 	private setObjReceiveShow(obj: any) {
 		obj.traverse((child: any) => {
-			if (child.isMesh) child.receiveShadow = true;
+			if (child.isMesh) {
+				child.receiveShadow = true;
+				child.geometry.computeVertexNormals();
+
+				// 這一段是防止model的材質沒有使用可以receive shadow的材質
+				if (child.material.type === 'MeshBasicMaterial') {
+					let map = child.material.map;
+					child.material = new THREE.MeshStandardMaterial({ map: map });
+				}
+			}
 		});
 	}
 
