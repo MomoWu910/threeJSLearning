@@ -1,5 +1,6 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { AmmoPhysics } from 'three/examples//jsm/physics/AmmoPhysics.js';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module';
 import * as THREE from 'three';
@@ -43,9 +44,16 @@ export default class View {
 	private shiba: any;
 	private godzilla: any;
 	private banana: any;
+	private physics: any;
 
 	constructor() {
+		// this.init = this.init.bind(this);
+		this.init();
+	}
 
+	async init() {
+
+		this.physics = await new AmmoPhysics();
 		//#region scene
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 10000);
@@ -54,6 +62,7 @@ export default class View {
 			canvas: document.getElementById('main-canvas') as HTMLCanvasElement,
 		});
 
+		this.renderer.setPixelRatio(window.devicePixelRatio);
 		this.renderer.shadowMap.enabled = true;
 		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
 
@@ -77,18 +86,19 @@ export default class View {
 		this.spotLight = new THREE.SpotLight(0xFFFFFF, 3, 2000, Math.PI / 4, 0.5);
 		this.spotLight.castShadow = true;
 		this.spotLight.position.set(0, 300, 500);
-		this.spotLight.shadow.bias = -0.0001; // 消除影子線條
+		this.spotLight.shadow.bias = -0.0005; // 消除影子線條
 		this.spotLightHelper = new THREE.SpotLightHelper(this.spotLight);
-		this.scene.add(this.spotLight, this.spotLightHelper);
+		// this.scene.add(this.spotLight, this.spotLightHelper);
 
-		this.directLight = new THREE.DirectionalLight(0xffffff, 1);
+		this.directLight = new THREE.DirectionalLight(0xffffff, 1.5);
 		this.directLight.castShadow = true;
+		this.directLight.shadow.bias = -0.0005; // 消除影子線條
 		this.scene.add(this.directLight.target);
 		this.setShadowSize(this.directLight, 1000, 2048);// 目前版本directLight 需要設定光照範圍以及座標才能正確照到
 		this.directLight.position.set(0, 1.75, 0);
 		this.directLight.position.multiplyScalar(100);
 		this.directLight.shadow.camera.far = 10000;
-		// this.scene.add(this.directLight);
+		this.scene.add(this.directLight);
 		//#endregion
 
 		//#region mesh
@@ -116,6 +126,7 @@ export default class View {
 		// this.plane.castShadow = true;
 		this.plane.receiveShadow = true;
 		this.scene.add(this.plane);
+		this.physics.addMesh(this.plane);
 
 		const sphereGeometry = new THREE.SphereGeometry(50, 32, 32);
 		const boxGeometry = new THREE.BoxGeometry(20, 20, 20);
@@ -124,29 +135,30 @@ export default class View {
 		this.cube.castShadow = true;
 		// this.cube.receiveShadow = true;
 		this.scene.add(this.cube);
+		this.physics.addMesh(this.cube);
 		//#endregion
 
 		//#region model
-		this.shiba = this.loadGLTFModel(shibaGLTF, (shiba: any) => {
-			shiba.position.set(0, 100, 0);
-			shiba.scale.set(100, 100, 100);
-		});
+		// this.shiba = this.loadGLTFModel(shibaGLTF, (shiba: any) => {
+		// 	shiba.position.set(0, 100, 0);
+		// 	shiba.scale.set(100, 100, 100);
+		// });
 
-		this.porsche = this.loadGLTFModel(porscheGLTF, (porsche: any) => {
-			porsche.position.set(200, 0, -200);
-			porsche.scale.set(100, 100, 100);
-			porsche.rotation.set(0, Math.PI / 2, 0);
-		});
+		// this.porsche = this.loadGLTFModel(porscheGLTF, (porsche: any) => {
+		// 	porsche.position.set(200, 0, -200);
+		// 	porsche.scale.set(100, 100, 100);
+		// 	porsche.rotation.set(0, Math.PI / 2, 0);
+		// });
 
-		this.godzilla = this.loadGLTFModel(godzillaGLTF, (godzilla: any) => {
-			godzilla.position.set(-200, 0, -200);
-			godzilla.scale.set(0.4, 0.4, 0.4);
-		});
+		// this.godzilla = this.loadGLTFModel(godzillaGLTF, (godzilla: any) => {
+		// 	godzilla.position.set(-200, 0, -200);
+		// 	godzilla.scale.set(0.4, 0.4, 0.4);
+		// });
 
-		this.banana = this.loadGLTFModel(bananaGLTF, (banana: any) => {
-			banana.position.set(0, 127, 0);
-			banana.scale.set(3, 3, 3);
-		})
+		// this.banana = this.loadGLTFModel(bananaGLTF, (banana: any) => {
+		// 	banana.position.set(0, 127, 0);
+		// 	banana.scale.set(3, 3, 3);
+		// })
 		//#endregion
 
 
@@ -223,14 +235,15 @@ export default class View {
 		this.renderer.render(this.scene, this.camera);
 		requestAnimationFrame(() => this.render());
 
-		this.cube.rotation.y += this.rotateAngle;
-		this.plane.material.normalScale.set(this.normalScale, this.normalScale);
+		// this.cube.rotation.y += this.rotateAngle;
+		// this.plane.material.normalScale.set(this.normalScale, this.normalScale);
 		// this.cube.position.x += 0.5;
 
 		let dt = this.clock.getDelta();
 		this.angle += dt / this.lightSpeed;
 		this.spotLight.position.set(500 * Math.cos(-this.angle), 300, 500 * Math.sin(-this.angle));
 		this.spotLightHelper.update();
+		this.directLight.position.set(500 * Math.cos(-this.angle), 300, 500 * Math.sin(-this.angle));
 
 
 		this.adjustCanvasSize();
