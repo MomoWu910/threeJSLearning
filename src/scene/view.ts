@@ -16,6 +16,7 @@ const shibaGLTF = '../../res/model/shiba/shiba.gltf';
 const godzillaGLTF = '../../res/model/godzilla/godzilla.gltf';
 const bananaGLTF = '../../res/model/banana/banana.glb';
 const rathalosGLTF = '../../res/model/rathalos/rathalos.gltf';
+const bitcoinGLTF = '../../res/model/bitcoin2/bitcoin2.gltf';
 
 export default class View {
 	private scene: any;
@@ -47,6 +48,7 @@ export default class View {
 	private godzilla: any;
 	private banana: any;
 	private rathalos: any;
+	private bitcoin: any;
 
 	constructor() {
 		this.initScene();
@@ -172,10 +174,14 @@ export default class View {
 		// 	banana.scale.set(3, 3, 3);
 		// });
 
-		this.rathalos = this.loadGLTFModel(rathalosGLTF, (rathalos: any) => {
-			this.setObjColor(rathalos, 0xFF6B56);
-			rathalos.position.set(-500, 0, 500);
-			rathalos.scale.set(3, 3, 3);
+		// this.rathalos = this.loadGLTFModel(rathalosGLTF, (rathalos: any) => {
+		// 	this.setObjColor(rathalos, 0xFF6B56);
+		// 	rathalos.position.set(-500, 0, 500);
+		// 	rathalos.scale.set(3, 3, 3);
+		// });
+
+		this.bitcoin = this.loadGLTFModel(bitcoinGLTF, (bitcoin: any) => {
+			bitcoin.scale.set(20, 20, 20);
 		});
 	}
 
@@ -264,9 +270,9 @@ export default class View {
 
 		let dt = this.clock.getDelta();
 		this.angle += dt / this.lightSpeed;
-		this.spotLight.position.set(500 * Math.cos(-this.angle), 300, 500 * Math.sin(-this.angle));
+		this.spotLight.position.set(500 * Math.cos(this.angle), 300, 500 * Math.sin(this.angle));
 		this.spotLightHelper.update();
-		this.directLight.position.set(500 * Math.cos(-this.angle), 300, 500 * Math.sin(-this.angle));
+		this.directLight.position.set(500 * Math.cos(this.angle), 300, 500 * Math.sin(this.angle));
 
 
 		this.adjustCanvasSize();
