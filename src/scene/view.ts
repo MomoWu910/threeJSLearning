@@ -1,6 +1,5 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { AmmoPhysics } from 'three/examples//jsm/physics/AmmoPhysics.js';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module';
 import * as THREE from 'three';
@@ -16,12 +15,15 @@ const porscheGLTF = '../../res/model/porsche/porsche.gltf';
 const shibaGLTF = '../../res/model/shiba/shiba.gltf';
 const godzillaGLTF = '../../res/model/godzilla/godzilla.gltf';
 const bananaGLTF = '../../res/model/banana/banana.glb';
+const rathalosGLTF = '../../res/model/rathalos/rathalos.gltf';
 
 export default class View {
 	private scene: any;
 	private camera: any;
 	private renderer: any;
 	private controls: any;
+	private axeHelper: any;
+	private gridHelper: any;
 	private stats: any;
 	private gui: any;
 
@@ -44,19 +46,21 @@ export default class View {
 	private shiba: any;
 	private godzilla: any;
 	private banana: any;
-	private physics: any;
+	private rathalos: any;
 
 	constructor() {
-		// this.init = this.init.bind(this);
-		this.init();
+		this.initScene();
+		this.initLight();
+		this.initMesh();
+		this.initModel();
+		this.initGui();
+		this.render();
 	}
 
-	async init() {
-
-		this.physics = await new AmmoPhysics();
-		//#region scene
+	private initScene() {
 		this.scene = new THREE.Scene();
-		this.camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 10000);
+		// this.camera = new THREE.OrthographicCamera(-innerWidth/2, innerWidth/2, innerHeight/2, -innerHeight/2, 0.1, 10000); // 正交
+		this.camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 10000); // 透視
 		this.renderer = new THREE.WebGLRenderer({
 			antialias: true,
 			canvas: document.getElementById('main-canvas') as HTMLCanvasElement,
@@ -68,18 +72,27 @@ export default class View {
 
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
-		this.camera.position.set(500, 500, 500);
+		this.camera.position.set(0, 500, 1000);
 		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 		this.scene.add(this.camera);
 
 		this.renderer.setSize(innerWidth, innerHeight);
 		this.renderer.setClearColor(new THREE.Color(0x888888));
 
+		this.axeHelper = new THREE.AxesHelper(2000);
+		this.axeHelper.position.set(0, 2, 0);
+		this.scene.add(this.axeHelper);
+
+		// (多大, 分幾格)
+		this.gridHelper = new THREE.GridHelper(1500, 15);
+		this.gridHelper.position.set(0, 1, 0);
+		this.scene.add(this.gridHelper);
+
 		this.stats = Stats();
 		document.body.appendChild(this.stats.dom);
-		//#endregion
+	}
 
-		//#region light
+	private initLight() {
 		const light = new THREE.AmbientLight(0x404040); // soft white light
 		this.scene.add(light);
 
@@ -99,9 +112,9 @@ export default class View {
 		this.directLight.position.multiplyScalar(100);
 		this.directLight.shadow.camera.far = 10000;
 		this.scene.add(this.directLight);
-		//#endregion
+	}
 
-		//#region mesh
+	private initMesh() {
 		const grass = new THREE.TextureLoader().load(grassTexture);
 		const grassNormal = new THREE.TextureLoader().load(grassNormalMapTexture);
 		const stone = new THREE.TextureLoader().load(stoneTexture);
@@ -126,7 +139,6 @@ export default class View {
 		// this.plane.castShadow = true;
 		this.plane.receiveShadow = true;
 		this.scene.add(this.plane);
-		this.physics.addMesh(this.plane);
 
 		const sphereGeometry = new THREE.SphereGeometry(50, 32, 32);
 		const boxGeometry = new THREE.BoxGeometry(20, 20, 20);
@@ -135,10 +147,10 @@ export default class View {
 		this.cube.castShadow = true;
 		// this.cube.receiveShadow = true;
 		this.scene.add(this.cube);
-		this.physics.addMesh(this.cube);
-		//#endregion
 
-		//#region model
+	}
+
+	private initModel() {
 		// this.shiba = this.loadGLTFModel(shibaGLTF, (shiba: any) => {
 		// 	shiba.position.set(0, 100, 0);
 		// 	shiba.scale.set(100, 100, 100);
@@ -158,17 +170,20 @@ export default class View {
 		// this.banana = this.loadGLTFModel(bananaGLTF, (banana: any) => {
 		// 	banana.position.set(0, 127, 0);
 		// 	banana.scale.set(3, 3, 3);
-		// })
-		//#endregion
+		// });
 
+		this.rathalos = this.loadGLTFModel(rathalosGLTF, (rathalos: any) => {
+			this.setObjColor(rathalos, 0xFF6B56);
+			rathalos.position.set(-500, 0, 500);
+			rathalos.scale.set(3, 3, 3);
+		});
+	}
 
-		//
+	private initGui() {
 		this.gui = new GUI();
 		this.gui.add(this, 'lightSpeed', 0.1, 5.0);
 		this.gui.add(this, 'rotateAngle', -1.0, 1.0);
 		this.gui.add(this, 'normalScale', 0, 1.0);
-
-		this.render();
 	}
 
 	private loadGLTFModel(path: string, callback: any) {
@@ -185,8 +200,8 @@ export default class View {
 			if (callback) callback(gltf.scene);
 			return gltf.scene;
 		}, (xhr) => {
-			// onprogress
-			// console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+			// onprogress 沒甚麼用
+			// console.log((xhr.loaded / xhr.timeStamp * 100) + '% loaded');
 		}, (err) => {
 			// onerror
 			console.error(err);
@@ -222,6 +237,14 @@ export default class View {
 	private setObjCastShow(obj: any) {
 		obj.traverse((child: any) => {
 			if (child.isMesh) child.castShadow = true;
+		});
+	}
+
+	private setObjColor(obj: any, color: any) {
+		obj.traverse((child: any) => {
+			if (child.isMesh) {
+				child.material.color.set(color);
+			}
 		});
 	}
 
