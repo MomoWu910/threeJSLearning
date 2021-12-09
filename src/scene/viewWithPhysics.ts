@@ -3,6 +3,9 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module';
 import * as THREE from 'three';
+import * as CANNON from 'cannon-es';
+import CannonUtils from '../constants/cannonUtils';
+import CannonDebugRenderer from '../constants/cannonDebugRenderer';
 
 const grassTexture = '../../res/texture/grass.png';
 const grassBlackMapTexture = '../../res/texture/grassBlack.png';
@@ -18,16 +21,19 @@ const bananaGLTF = '../../res/model/banana/banana.glb';
 const rathalosGLTF = '../../res/model/rathalos/rathalos.gltf';
 const bitcoinGLTF = '../../res/model/bitcoin2/bitcoin2.gltf';
 
-export default class View {
+export default class ViewWithPhysics {
 	//#region 宣告變數
 	private scene: any;
 	private camera: any;
 	private renderer: any;
+	private cannonDebugRenderer: any;
 	private controls: any;
 	private axeHelper: any;
 	private gridHelper: any;
 	private stats: any;
 	private gui: any;
+
+	private world: any;
 
 	private plane: any;
 	private cube: any;
@@ -54,6 +60,7 @@ export default class View {
 
 	constructor() {
 		this.initScene();
+		this.initCannon();
 		this.initLight();
 		this.initMesh();
 		this.initModel();
@@ -94,6 +101,15 @@ export default class View {
 
 		this.stats = Stats();
 		document.body.appendChild(this.stats.dom);
+	}
+
+	private initCannon() {
+		this.world = new CANNON.World(); 
+		this.world.gravity.set(0,-9.8,0); //设置重力 米/平方秒
+		this.world.broadphase = new CANNON.NaiveBroadphase(); //默认的碰撞检测方式，该碰撞检测速度比较高
+		this.world.solver.iterations = 5; //解算器的迭代次数，更高的迭代次数意味着更加精确同时性能将会降低
+
+		this.cannonDebugRenderer = new CannonDebugRenderer(this.scene, this.world);
 	}
 
 	private initLight() {
@@ -147,28 +163,49 @@ export default class View {
 		this.plane.receiveShadow = true;
 		this.scene.add(this.plane);
 
+		// 地板剛體
+		let groundShape = new CANNON.Plane();
+		let bodyGround = new CANNON.Body({
+			mass: 0,
+			position: new CANNON.Vec3(0, 1, 0),
+			shape: groundShape
+		})
+		bodyGround.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+		this.plane.userData = bodyGround;
+		this.world.addBody(bodyGround);
+
 		// // 方塊
-		const sphereGeometry = new THREE.SphereGeometry(50, 32, 32);
-		const boxGeometry = new THREE.BoxGeometry(20, 20, 20);
-		this.cube = new THREE.Mesh(boxGeometry, materialPhong);
-		this.cube.position.set(100, 100, 100);
-		this.cube.castShadow = true;
-		// this.cube.receiveShadow = true;
-		this.scene.add(this.cube);
+		// const sphereGeometry = new THREE.SphereGeometry(50, 32, 32);
+		// const boxGeometry = new THREE.BoxGeometry(20, 20, 20);
+		// this.cube = new THREE.Mesh(boxGeometry, materialPhong);
+		// this.cube.position.set(100, 100, 100);
+		// this.cube.castShadow = true;
+		// // this.cube.receiveShadow = true;
+		// this.scene.add(this.cube);
 		
+		// // 方塊剛體
+		// let bodyBox = new CANNON.Body({
+		// 	mass: 1,
+		// 	position: new CANNON.Vec3(100, 100, 100),
+		// 	shape: new CANNON.Box(new CANNON.Vec3(10, 10, 10)),
+		// 	// material: new CANNON.Material({friction: 0.1, restitution: 0})
+		// });
+		// this.cube.userData = bodyBox;
+		// this.world.addBody(bodyBox);
+
 	}
 
 	private initModel() {
-		this.shiba = this.loadGLTFModel(shibaGLTF, (shiba: any) => {
-			shiba.position.set(0, 100, 0);
-			shiba.scale.set(100, 100, 100);
-		});
-
-		// this.porsche = this.loadGLTFModel(porscheGLTF, (porsche: any) => {
-		// 	porsche.position.set(200, 0, -200);
-		// 	porsche.scale.set(100, 100, 100);
-		// 	porsche.rotation.set(0, Math.PI / 2, 0);
+		// this.shiba = this.loadGLTFModel(shibaGLTF, (shiba: any) => {
+		// 	shiba.position.set(0, 200, 0);
+		// 	shiba.scale.set(100, 100, 100);
 		// });
+
+		this.porsche = this.loadGLTFModel(porscheGLTF, (porsche: any) => {
+			porsche.position.set(200, 0, -200);
+			porsche.scale.set(100, 100, 100);
+			porsche.rotation.set(0, Math.PI / 2, 0);
+		});
 
 		// this.godzilla = this.loadGLTFModel(godzillaGLTF, (godzilla: any) => {
 		// 	godzilla.position.set(-200, 0, -200);
@@ -182,13 +219,13 @@ export default class View {
 
 		// this.rathalos = this.loadGLTFModel(rathalosGLTF, (rathalos: any) => {
 		// 	this.setObjColor(rathalos, 0xFF6B56);
-		// 	rathalos.position.set(-500, 0, 400);
+		// 	rathalos.position.set(-500, 0, 500);
 		// 	rathalos.scale.set(3, 3, 3);
 		// });
 
 		// this.bitcoin = this.loadGLTFModel(bitcoinGLTF, (bitcoin: any) => {
 		// 	bitcoin.scale.set(20, 20, 20);
-		// 	bitcoin.position.set(-200, 10, 0);
+		// 	bitcoin.position.set(0, 100, 0);
 		// });
 	}
 
@@ -197,7 +234,6 @@ export default class View {
 		this.gui.add(this, 'lightSpeed', 0.1, 5.0);
 		this.gui.add(this, 'rotateAngle', -1.0, 1.0);
 		this.gui.add(this, 'normalScale', 0, 1.0);
-        console.log(this.gui.domElement );
 	}
 
 	private loadGLTFModel(path: string, callback: any) {
@@ -212,6 +248,8 @@ export default class View {
 			if (callback) callback(gltf.scene);
 
 			console.log(gltf.scene, gltf.scene.name);
+
+			// this.setModelPhysic(gltf.scene);
 
 			return gltf.scene;
 		}, (xhr) => {
@@ -237,6 +275,7 @@ export default class View {
 	private setObjReceiveShow(obj: any) {
 		obj.traverse((child: any) => {
 			if (child.isMesh) {
+				if(child.geometry && child.geometry.attributes && child.geometry.attributes.uv) console.log(child.geometry.attributes.uv.count );
 				child.receiveShadow = true;
 				child.geometry.computeVertexNormals();
 
@@ -253,6 +292,41 @@ export default class View {
 		obj.traverse((child: any) => {
 			if (child.isMesh) child.castShadow = true;
 		});
+	}
+
+	private setModelPhysic(obj: any) {
+		let collisionMesh: THREE.Object3D;
+		let body = new CANNON.Body({ mass: 1 });
+		obj.traverse((child: any) => {
+			if (child.isMesh) {
+				collisionMesh = child;
+				const shape = CannonUtils.CreateTrimesh(
+					(collisionMesh as THREE.Mesh).geometry
+				);
+				shape.setScale(new CANNON.Vec3(obj.scale.x, obj.scale.y, obj.scale.z));
+
+				// 有些model的body會偏移 所以再校正 要用四元數去旋轉
+				body.addShape(shape, new CANNON.Vec3(0, 0, 0), new CANNON.Quaternion(0, 0, 0, 1));
+				// body.addShape(shape, new CANNON.Vec3(1,1,1), new CANNON.Quaternion(-0.7068252, 0, 0, 0.7073883 )); //shiba
+				// body.addShape(shape, new CANNON.Vec3(-14, 6.5, 0), new CANNON.Quaternion( 0, 0, -0.3173047, 0.9483237 )); // banana
+			}
+		});
+		
+		body.position.x = obj.position.x;
+		body.position.y = obj.position.y;
+		body.position.z = obj.position.z;
+
+		console.log(obj, body);
+		console.log(obj.position, body.position);
+
+		body.quaternion.x = obj.quaternion.x;
+		body.quaternion.y = obj.quaternion.y;
+		body.quaternion.z = obj.quaternion.z;
+		body.quaternion.w = obj.quaternion.w;
+		
+		// body.updateBoundingRadius();
+		this.world.addBody(body);
+		obj.userData = body;
 	}
 
 	private setObjColor(obj: any, color: any) {
@@ -273,8 +347,9 @@ export default class View {
 		this.renderer.render(this.scene, this.camera);
 		requestAnimationFrame(() => this.render());
 
-		this.cube.rotation.y += this.rotateAngle;
-		this.plane.material.normalScale.set(this.normalScale, this.normalScale);
+		// this.cube.rotation.y += this.rotateAngle;
+		// this.plane.material.normalScale.set(this.normalScale, this.normalScale);
+		// this.cube.position.x += 0.5;
 
 		let dt = this.clock.getDelta();
 		this.angle += dt / this.lightSpeed;
@@ -282,9 +357,25 @@ export default class View {
 		this.spotLightHelper.update();
 		this.directLight.position.set(500 * Math.cos(this.angle), 300, 500 * Math.sin(this.angle));
 
+		this.updatePhysics(dt);
 		this.adjustCanvasSize();
 		this.controls.update();
 		this.stats.update();
 	}
 
+	private updatePhysics(timeStep: number) {
+		this.world.step(timeStep);
+		this.scene.children.forEach((d: any) => {
+			if( d.userData && Object.keys(d.userData).length !== 0) {
+				// console.log('updatePhysics', d.userData.position);
+				d.position.copy(d.userData.position);
+				
+				d.quaternion.x = d.userData.quaternion.x;
+				d.quaternion.y = d.userData.quaternion.y;
+				d.quaternion.z = d.userData.quaternion.z;
+				d.quaternion.w = d.userData.quaternion.w;
+			}
+		});
+		this.cannonDebugRenderer.update();
+	}
 }
