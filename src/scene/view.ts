@@ -63,9 +63,9 @@ export default class View {
 
 	private initScene() {
 		this.scene = new THREE.Scene();
-		// this.camera = new THREE.OrthographicCamera(-innerWidth/2, innerWidth/2, innerHeight/2, -innerHeight/2, 0.1, 10000); // 正交
-		this.camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 10000); // 透視
-		this.renderer = new THREE.WebGLRenderer({
+		// this.camera = new THREE.OrthographicCamera(-window.innerWidth/2, window.innerWidth/2, window.innerHeight/2, -window.innerHeight/2, 0.1, 10000); // 正交
+		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000); // 透視
+		this.renderer = new THREE.WebGL1Renderer({
 			antialias: true,
 			canvas: document.getElementById('main-canvas') as HTMLCanvasElement,
 		});
@@ -80,17 +80,17 @@ export default class View {
 		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 		this.scene.add(this.camera);
 
-		this.renderer.setSize(innerWidth, innerHeight);
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.renderer.setClearColor(new THREE.Color(0x888888));
 
 		this.axeHelper = new THREE.AxesHelper(2000);
 		this.axeHelper.position.set(0, 2, 0);
-		this.scene.add(this.axeHelper);
+		// this.scene.add(this.axeHelper);
 
 		// (多大, 分幾格)
 		this.gridHelper = new THREE.GridHelper(1500, 15);
 		this.gridHelper.position.set(0, 1, 0);
-		this.scene.add(this.gridHelper);
+		// this.scene.add(this.gridHelper);
 
 		this.stats = Stats();
 		document.body.appendChild(this.stats.dom);
@@ -155,7 +155,7 @@ export default class View {
 		this.cube.castShadow = true;
 		// this.cube.receiveShadow = true;
 		this.scene.add(this.cube);
-		
+
 	}
 
 	private initModel() {
@@ -197,7 +197,7 @@ export default class View {
 		this.gui.add(this, 'lightSpeed', 0.1, 5.0);
 		this.gui.add(this, 'rotateAngle', -1.0, 1.0);
 		this.gui.add(this, 'normalScale', 0, 1.0);
-        console.log(this.gui.domElement );
+		console.log(this.gui.domElement);
 	}
 
 	private loadGLTFModel(path: string, callback: any) {

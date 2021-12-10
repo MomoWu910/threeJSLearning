@@ -18,7 +18,7 @@ const bitcoinGLTF = '../../res/model/bitcoin2/bitcoin2.gltf';
 const radius = 250;
 const modelRadius = radius - 80;
 const cylinderHeight = 15;
-const eachReward = Math.PI/3;
+const eachReward = Math.PI / 3;
 
 export default class ViewReward {
 	//#region 宣告變數
@@ -37,16 +37,16 @@ export default class ViewReward {
 	private pointLight: any;
 	private pointLightHelper: any;
 	private directLight: any;
-    
-    private cylinder: any;
-    private btn: any;
+
+	private cylinder: any;
+	private btn: any;
 	private lightSpeed: number = 5;
 	private rotateAngle: number = 0.01;
 	private normalScale: number = 1;
 	private angle: number = 0;
 	private clock = new THREE.Clock();
 
-    private rewards: any;
+	private rewards: any;
 	private loaderGLTF = new GLTFLoader();
 	private porsche: any;
 	private shiba: any;
@@ -55,26 +55,26 @@ export default class ViewReward {
 	private rathalos: any;
 	private bitcoin: any;
 
-    private raycaster: any;
-    private mouse: any = new THREE.Vector2(0, 0);
-    private isClick: boolean = false;
+	private raycaster: any;
+	private mouse: any = new THREE.Vector2(0, 0);
+	private isClick: boolean = false;
 	//#endregion
 
 	constructor() {
-        
-        this.onMouseMove = this.onMouseMove.bind(this);
-        this.onMouseDown = this.onMouseDown.bind(this);
+
+		this.onMouseMove = this.onMouseMove.bind(this);
+		this.onMouseDown = this.onMouseDown.bind(this);
 
 		this.initScene();
 		this.initLight();
 		this.initFloor();
-        this.initCylinder();
-        this.initBtn();
+		this.initCylinder();
+		this.initBtn();
 		this.initModel();
-        this.initRaycaster();
-        
-        window.addEventListener( 'mousemove', this.onMouseMove, false );
-        window.addEventListener( 'mousedown', this.onMouseDown, false );
+		this.initRaycaster();
+
+		window.addEventListener('mousemove', this.onMouseMove, false);
+		window.addEventListener('mousedown', this.onMouseDown, false);
 		this.render();
 	}
 
@@ -82,7 +82,7 @@ export default class ViewReward {
 		this.scene = new THREE.Scene();
 		// this.camera = new THREE.OrthographicCamera(-innerWidth/2, innerWidth/2, innerHeight/2, -innerHeight/2, 0.1, 10000); // 正交
 		this.camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 10000); // 透視
-		this.renderer = new THREE.WebGLRenderer({
+		this.renderer = new THREE.WebGL1Renderer({
 			antialias: true,
 			canvas: document.getElementById('main-canvas') as HTMLCanvasElement,
 		});
@@ -158,92 +158,92 @@ export default class ViewReward {
 		// this.plane.receiveShadow = true;
 		this.scene.add(this.plane);
 
-        const boxHeight = 250;
-        const materialPhong = new THREE.MeshPhongMaterial({ color: 0x000000, side: THREE.DoubleSide });
-        const boxGeometry = new THREE.CylinderGeometry(5, 5, boxHeight, 32);
-        const box = new THREE.Mesh(boxGeometry, materialPhong);
+		const boxHeight = 250;
+		const materialPhong = new THREE.MeshPhongMaterial({ color: 0x000000, side: THREE.DoubleSide });
+		const boxGeometry = new THREE.CylinderGeometry(5, 5, boxHeight, 32);
+		const box = new THREE.Mesh(boxGeometry, materialPhong);
 		// box.rotation.x = -Math.PI / 2;
-        box.position.set(0, 0, 30);
-        this.scene.add(box);
-		
+		box.position.set(0, 0, 30);
+		this.scene.add(box);
+
 	}
 
-    private initCylinder() {
-        const materialPhong = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
-        const geometry = new THREE.CylinderGeometry(radius, radius, cylinderHeight, 6);
-        this.cylinder = new THREE.Mesh( geometry, materialPhong);
-        this.cylinder.position.set(0, radius+50, 0);
-        this.cylinder.rotation.set(Math.PI/2, 0, 0);
-        this.scene.add(this.cylinder);
-    }
+	private initCylinder() {
+		const materialPhong = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
+		const geometry = new THREE.CylinderGeometry(radius, radius, cylinderHeight, 6);
+		this.cylinder = new THREE.Mesh(geometry, materialPhong);
+		this.cylinder.position.set(0, radius + 50, 0);
+		this.cylinder.rotation.set(Math.PI / 2, 0, 0);
+		this.scene.add(this.cylinder);
+	}
 
-    private initBtn() {
-        this.btn = new THREE.Group();
-        const boxHeight = 50;
-        const materialPhong = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
-        const boxGeometry = new THREE.BoxGeometry(30, 30, boxHeight);
-        const box = new THREE.Mesh(boxGeometry, materialPhong);
+	private initBtn() {
+		this.btn = new THREE.Group();
+		const boxHeight = 50;
+		const materialPhong = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
+		const boxGeometry = new THREE.BoxGeometry(30, 30, boxHeight);
+		const box = new THREE.Mesh(boxGeometry, materialPhong);
 
-        const btnHeight = 5;
-        const materialbtn = new THREE.MeshPhongMaterial({ color: 0xaa0000, side: THREE.DoubleSide });
-        const cylinder = new THREE.CylinderGeometry(10, 10, btnHeight, 32);
-        const btn = new THREE.Mesh(cylinder, materialbtn);
-        btn.name = 'btn';
-        this.isClick = false;
-        btn.rotation.set(Math.PI/2, 0, 0);
-        btn.position.set(0, 0, (boxHeight+btnHeight-2)/2);
-        // box.castShadow = true;
+		const btnHeight = 5;
+		const materialbtn = new THREE.MeshPhongMaterial({ color: 0xaa0000, side: THREE.DoubleSide });
+		const cylinder = new THREE.CylinderGeometry(10, 10, btnHeight, 32);
+		const btn = new THREE.Mesh(cylinder, materialbtn);
+		btn.name = 'btn';
+		this.isClick = false;
+		btn.rotation.set(Math.PI / 2, 0, 0);
+		btn.position.set(0, 0, (boxHeight + btnHeight - 2) / 2);
+		// box.castShadow = true;
 
-        this.btn.rotation.set(-Math.PI/2, 0, 0);
-        this.btn.position.set(100, boxHeight/2, 300);
-        this.btn.add(box, btn)
-        this.scene.add(this.btn);
+		this.btn.rotation.set(-Math.PI / 2, 0, 0);
+		this.btn.position.set(100, boxHeight / 2, 300);
+		this.btn.add(box, btn)
+		this.scene.add(this.btn);
 
-    }
+	}
 
-    //modelRadius * Math.cos(Math.PI/6), radius, modelRadius * Math.sin(Math.PI/6)
+	//modelRadius * Math.cos(Math.PI/6), radius, modelRadius * Math.sin(Math.PI/6)
 	private initModel() {
 		this.shiba = this.loadGLTFModel(shibaGLTF, (shiba: any) => {
-			shiba.position.set(modelRadius * Math.cos(eachReward), cylinderHeight+27,  modelRadius * Math.sin(eachReward));
-            shiba.rotation.set(-Math.PI/2, 0, 0);
+			shiba.position.set(modelRadius * Math.cos(eachReward), cylinderHeight + 27, modelRadius * Math.sin(eachReward));
+			shiba.rotation.set(-Math.PI / 2, 0, 0);
 			shiba.scale.set(30, 30, 30);
-            this.cylinder.add(shiba);
+			this.cylinder.add(shiba);
 		});
 
 		this.porsche = this.loadGLTFModel(porscheGLTF, (porsche: any) => {
-			porsche.position.set(modelRadius * Math.cos(2*eachReward), cylinderHeight-5,  modelRadius * Math.sin(2*eachReward));
+			porsche.position.set(modelRadius * Math.cos(2 * eachReward), cylinderHeight - 5, modelRadius * Math.sin(2 * eachReward));
 			porsche.scale.set(20, 20, 20);
 			porsche.rotation.set(0, Math.PI / 4, 0);
-            this.cylinder.add(porsche);
+			this.cylinder.add(porsche);
 		});
-        
+
 		this.rathalos = this.loadGLTFModel(rathalosGLTF, (rathalos: any) => {
 			this.setObjColor(rathalos, 0xFF6B56);
-			rathalos.position.set(modelRadius * Math.cos(3*eachReward)+20, 250, modelRadius * Math.sin(3*eachReward)+50);
-			rathalos.rotation.set(-Math.PI / 2, 0, Math.PI /5);
+			rathalos.position.set(modelRadius * Math.cos(3 * eachReward) + 20, 250, modelRadius * Math.sin(3 * eachReward) + 50);
+			rathalos.rotation.set(-Math.PI / 2, 0, Math.PI / 5);
 			rathalos.scale.set(1, 1, 1);
-            this.cylinder.add(rathalos);
+			this.cylinder.add(rathalos);
 		});
-        
+
 		this.banana = this.loadGLTFModel(bananaGLTF, (banana: any) => {
 			banana.position.set(modelRadius * Math.cos(-eachReward), 10, modelRadius * Math.sin(-eachReward));
 			banana.rotation.set(-Math.PI / 2, 0, 0);
 			banana.scale.set(3, 3, 3);
-            this.cylinder.add(banana);
+			this.cylinder.add(banana);
 		});
 
 		this.bitcoin = this.loadGLTFModel(bitcoinGLTF, (bitcoin: any) => {
 			bitcoin.scale.set(10, 10, 10);
 			bitcoin.rotation.set(-Math.PI / 2, 0, 0);
-			bitcoin.position.set(modelRadius * Math.cos(-2*eachReward) - 130, 10, modelRadius * Math.sin(-2*eachReward) + 180);
-            this.cylinder.add(bitcoin);
+			bitcoin.position.set(modelRadius * Math.cos(-2 * eachReward) - 130, 10, modelRadius * Math.sin(-2 * eachReward) + 180);
+			this.cylinder.add(bitcoin);
 		});
 
 		this.godzilla = this.loadGLTFModel(godzillaGLTF, (godzilla: any) => {
-			godzilla.position.set(-modelRadius * Math.cos(3*eachReward), cylinderHeight-5,  modelRadius * Math.sin(-3*eachReward) + 50);
+			godzilla.position.set(-modelRadius * Math.cos(3 * eachReward), cylinderHeight - 5, modelRadius * Math.sin(-3 * eachReward) + 50);
 			godzilla.rotation.set(-Math.PI / 2, 0, 0);
 			godzilla.scale.set(0.2, 0.2, 0.2);
-            this.cylinder.add(godzilla);
+			this.cylinder.add(godzilla);
 		});
 
 	}
@@ -311,50 +311,51 @@ export default class ViewReward {
 		});
 	}
 
-    private initRaycaster() {
-        this.raycaster = new THREE.Raycaster();
-        this.mouse = new THREE.Vector2(0, 0);
-    }
+	private initRaycaster() {
+		this.raycaster = new THREE.Raycaster();
+		this.mouse = new THREE.Vector2(0, 0);
+	}
 
-    private onMouseMove( event ) {
-        // 将鼠标位置归一化为设备坐标。x 和 y 方向的取值范围是 (-1 to +1)
-        this.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        this.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-        
-        // 通过摄像机和鼠标位置更新射线
-        this.raycaster.setFromCamera( this.mouse, this.camera );
-        // 计算物体和射线的焦点
-        const intersects = this.raycaster.intersectObjects( this.scene.children, true );
-        if ( intersects.length > 0 ) {
-            if (intersects[0].object.name === "btn") {
-                
-            }
-        }
-    }
+	private onMouseMove(event) {
+		// 将鼠标位置归一化为设备坐标。x 和 y 方向的取值范围是 (-1 to +1)
+		this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+		this.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-    private onMouseDown(event) {
+		// 通过摄像机和鼠标位置更新射线
+		this.raycaster.setFromCamera(this.mouse, this.camera);
+		// 计算物体和射线的焦点
+		const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+		if (intersects.length > 0) {
+			if (intersects[0].object.name === "btn") {
 
-        this.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        this.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+			}
+		}
+	}
 
-        // 通过摄像机和鼠标位置更新射线
-        this.raycaster.setFromCamera( this.mouse, this.camera );
-        // 计算物体和射线的焦点
-        const intersects = this.raycaster.intersectObjects( this.scene.children, true );
-        if ( intersects.length > 0 ) {
-            if (intersects[0].object.name === "btn" && !this.isClick) {
-                this.isClick = true;
-                const random = Math.floor(Math.random()*360) + 100; 
-                console.log(random);
-                gsap.to(this.cylinder.rotation, {y: random, duration: 5, ease: "power3.out", 
-                    onComplete: () => {
-                        this.isClick = false;
-                    }
-                });
+	private onMouseDown(event) {
 
-            }
-        }
-    }
+		this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+		this.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+		// 通过摄像机和鼠标位置更新射线
+		this.raycaster.setFromCamera(this.mouse, this.camera);
+		// 计算物体和射线的焦点
+		const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+		if (intersects.length > 0) {
+			if (intersects[0].object.name === "btn" && !this.isClick) {
+				this.isClick = true;
+				const random = Math.floor(Math.random() * 360) + 100;
+				console.log(random);
+				gsap.to(this.cylinder.rotation, {
+					y: random, duration: 5, ease: "power3.out",
+					onComplete: () => {
+						this.isClick = false;
+					}
+				});
+
+			}
+		}
+	}
 
 	private adjustCanvasSize() {
 		this.renderer.setSize(innerWidth, innerHeight);
