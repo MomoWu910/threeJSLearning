@@ -16,7 +16,7 @@
       overflow: hidden;
     }
 
-    #main-canvas {
+    #main-canvas, #glslCanvas {
       position: absolute;
       height: 100%;
       width: 100%;
@@ -26,6 +26,21 @@
 
 <body>
   <canvas id="main-canvas"></canvas>
+  <script id="vertexShader" type="x-shader/x-vertex">
+      void main() {
+        gl_Position = vec4( position, 1.0 );
+      }
+  </script>
+  <script id="fragmentShader" type="x-shader/x-fragment">
+      uniform vec2 u_resolution;
+      uniform float u_time;
+
+      void main() {
+          vec2 st = gl_FragCoord.xy/u_resolution.xy;
+          gl_FragColor=vec4(st.x,st.y,0.0,0.1);
+      }
+  </script>
+
   <script src="dist/bundle.js"></script>
 </body>
 

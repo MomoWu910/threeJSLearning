@@ -50,13 +50,16 @@ export default class View {
 	private banana: any;
 	private rathalos: any;
 	private bitcoin: any;
+
+	private t_uniforms: any = {};
 	//#endregion
 
 	constructor() {
 		this.initScene();
+		this.initShader();
 		this.initLight();
 		this.initMesh();
-		this.initModel();
+		// this.initModel();
 		this.initGui();
 		this.render();
 	}
@@ -94,6 +97,16 @@ export default class View {
 
 		this.stats = Stats();
 		document.body.appendChild(this.stats.dom);
+
+		this.onWindowResize();
+		window.addEventListener( 'resize', this.onWindowResize, false );
+	}
+
+	private initShader() {
+		this.t_uniforms = {
+			u_time: { type: "f", value: 1.0 },
+			u_resolution: { type: "v2", value: new THREE.Vector2() }
+		};
 	}
 
 	private initLight() {
@@ -155,6 +168,19 @@ export default class View {
 		this.cube.castShadow = true;
 		// this.cube.receiveShadow = true;
 		this.scene.add(this.cube);
+
+		// shader mesh
+		let t_vertexShader =  document.getElementById('vertexShader') as HTMLCanvasElement;
+		let t_fragmentShader = document.getElementById('fragmentShader') as HTMLCanvasElement;
+		const geometry = new THREE.PlaneBufferGeometry( 2, 2 );
+		let material = new THREE.ShaderMaterial({
+			uniforms: this.t_uniforms,
+			vertexShader: t_vertexShader && t_vertexShader.textContent ? t_vertexShader.textContent.toString() : undefined,
+			fragmentShader: t_fragmentShader && t_fragmentShader.textContent ? t_fragmentShader.textContent.toString() : undefined
+		});
+
+		let mesh = new THREE.Mesh( geometry, material );
+		this.scene.add( mesh );
 
 	}
 
@@ -287,4 +313,9 @@ export default class View {
 		this.stats.update();
 	}
 
+	private onWindowResize( event? ) {
+		this.renderer.setSize( window.innerWidth, window.innerHeight );
+		// this.uniforms.u_resolution.value.x = this.renderer.domElement.width;
+		// this.uniforms.u_resolution.value.y = this.renderer.domElement.height;
+	}
 }
