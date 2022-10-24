@@ -59,7 +59,8 @@ export default class View {
 		this.initShader();
 		this.initLight();
 		this.initMesh();
-		// this.initModel();
+		this.initShaderMesh();
+		this.initModel();
 		this.initGui();
 		this.render();
 	}
@@ -100,13 +101,6 @@ export default class View {
 
 		this.onWindowResize();
 		window.addEventListener( 'resize', this.onWindowResize, false );
-	}
-
-	private initShader() {
-		this.t_uniforms = {
-			u_time: { type: "f", value: 1.0 },
-			u_resolution: { type: "v2", value: new THREE.Vector2() }
-		};
 	}
 
 	private initLight() {
@@ -169,6 +163,16 @@ export default class View {
 		// this.cube.receiveShadow = true;
 		this.scene.add(this.cube);
 
+	}
+
+	private initShader() {
+		this.t_uniforms = {
+			time: { value: 1.0 }
+			// u_resolution: { type: "v2", value: new THREE.Vector2() }
+		};
+	}
+
+	private initShaderMesh() {
 		// shader mesh
 		let t_vertexShader =  document.getElementById('vertexShader') as HTMLCanvasElement;
 		let t_fragmentShader = document.getElementById('fragmentShader') as HTMLCanvasElement;
@@ -178,6 +182,8 @@ export default class View {
 			vertexShader: t_vertexShader && t_vertexShader.textContent ? t_vertexShader.textContent.toString() : undefined,
 			fragmentShader: t_fragmentShader && t_fragmentShader.textContent ? t_fragmentShader.textContent.toString() : undefined
 		});
+		material.transparent = true;
+		material.opacity = 0.5;
 
 		let mesh = new THREE.Mesh( geometry, material );
 		this.scene.add( mesh );
@@ -298,6 +304,8 @@ export default class View {
 	private render() {
 		this.renderer.render(this.scene, this.camera);
 		requestAnimationFrame(() => this.render());
+
+		this.t_uniforms[ 'time' ].value = performance.now() / 1000;
 
 		this.cube.rotation.y += this.rotateAngle;
 		this.plane.material.normalScale.set(this.normalScale, this.normalScale);
