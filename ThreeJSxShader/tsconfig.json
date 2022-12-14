@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "lib": [
+      "es2015",
+      "dom"
+    ],
+    "target": "es6",
+    "noImplicitAny": false,
+    "module": "commonjs",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "three/examples/jsm/libs/dat.gui.module": [
+        "./node_modules/@types/dat.gui"
+      ]
+    },
+    "types": [
+      "webpack-env",
+      "node"
+    ]
+  }
+}

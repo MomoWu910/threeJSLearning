@@ -10,7 +10,7 @@ const stoneTexture = '../../res/texture/stone.png';
 const stoneNTexture = '../../res/texture/stoneN.png';
 const shibaGLTF = '../../res/model/shiba/shiba.gltf';
 
-export default class ViewLession1_1 {
+export default class ViewLession1_1_ans {
 	//#region 宣告變數
 	private scene: any;
 	private camera: any;
