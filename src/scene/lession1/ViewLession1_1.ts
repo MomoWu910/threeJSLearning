@@ -159,6 +159,6 @@ export default class ViewLession1_1 {
 	}
 
 	private onWindowResize( event? ) {
-		this.renderer.setSize( window.innerWidth, window.innerHeight );
+		// this.renderer.setSize( window.innerWidth, window.innerHeight );
 	}
 }

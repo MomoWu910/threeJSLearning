@@ -11,7 +11,7 @@ if (module.hot) {
 
 // new ViewReward();
 // new ViewWithPhysics();
-// new View();
+new View();
 
-new ViewLession1_1();
+// new ViewLession1_1();
 // new ViewLession1_1_ans();
