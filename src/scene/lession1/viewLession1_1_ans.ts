@@ -80,6 +80,7 @@ export default class ViewLession1_1_ans {
 		this.stats = Stats();
 		document.body.appendChild(this.stats.dom);
 
+		this.onWindowResize = this.onWindowResize.bind(this);
 		this.onWindowResize();
 		window.addEventListener( 'resize', this.onWindowResize, false );
 	}

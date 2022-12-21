@@ -5,12 +5,22 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module';
 import * as THREE from 'three';
 
+
+// import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+// import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+// import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
+// import { BloomPass } from 'three/examples/jsm/postprocessing/BloomPass.js';
+
+
 const grassTexture = '../../res/texture/grass.png';
 const grassBlackMapTexture = '../../res/texture/grassBlack.png';
 const grassWhiteMapTexture = '../../res/texture/grassWhite.png';
 const grassNormalMapTexture = '../../res/texture/grassNormal.png';
 const stoneTexture = '../../res/texture/stone.png';
 const stoneNTexture = '../../res/texture/stoneN.png';
+
+const cloudTexture = '../../res/texture/cloud.png';
+const lavaTexture = '../../res/texture/lavatile.jpg';
 
 const porscheGLTF = '../../res/model/porsche/porsche.gltf';
 const shibaGLTF = '../../res/model/shiba/shiba.gltf';
@@ -74,14 +84,23 @@ export default class View {
 	private segaMini: any;
 
 	private t_uniforms: any = {};
+	private t_uniforms2: any = {};
+	private shaderCube: any;
+	private shaderPlane: any;
+
+
+	// private renderModel: any;
+	// private effectBloom : any;
+	// private effectFilm: any;
+	// private composer: any;
 	//#endregion
 
 	constructor() {
 		this.initScene();
-		// this.initShader();
+		this.initShader();
 		this.initLight();
 		this.initMesh();
-		// this.initShaderMesh();
+		this.initShaderMesh();
 		this.initModel();
 		this.initGui();
 		this.render();
@@ -97,6 +116,7 @@ export default class View {
 		});
 
 		this.renderer.setPixelRatio(window.devicePixelRatio);
+		// this.renderer.autoClear = false;
 		this.renderer.shadowMap.enabled = true;
 		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
 
@@ -121,6 +141,19 @@ export default class View {
 		this.stats = Stats();
 		document.body.appendChild(this.stats.dom);
 
+		
+		// this.renderModel = new RenderPass( this.scene, this.camera );
+		// this.effectBloom = new BloomPass( 1.25 );
+		// this.effectFilm = new FilmPass( 0.35, 0.95, 2048, undefined );
+
+		// this.composer = new EffectComposer( this.renderer );
+
+		// this.composer.addPass( this.renderModel );
+		// this.composer.addPass( this.effectBloom );
+		// this.composer.addPass( this.effectFilm );
+
+
+		this.onWindowResize = this.onWindowResize.bind(this);
 		this.onWindowResize();
 		window.addEventListener( 'resize', this.onWindowResize, false );
 	}
@@ -188,27 +221,53 @@ export default class View {
 	}
 
 	private initShader() {
+		const textureLoader = new THREE.TextureLoader();
 		this.t_uniforms = {
-			time: { value: 1.0 }
-			// u_resolution: { type: "v2", value: new THREE.Vector2() }
+			time: { value: 1.0 },
 		};
+		this.t_uniforms2 = {
+			time: { value: 1.0 },
+			fogDensity: { value: 0 },
+			fogColor: { value: new THREE.Vector3( 0, 0, 0 ) },
+			uvScale: { value: new THREE.Vector2( 3.0, 1.0 ) },
+			texture1: { value: textureLoader.load(cloudTexture) },
+			texture2: { value: textureLoader.load(lavaTexture) }
+		};
+		
+		this.t_uniforms2[ 'texture1' ].value.wrapS = this.t_uniforms2[ 'texture1' ].value.wrapT = THREE.RepeatWrapping;
+		this.t_uniforms2[ 'texture2' ].value.wrapS = this.t_uniforms2[ 'texture2' ].value.wrapT = THREE.RepeatWrapping;
 	}
 
 	private initShaderMesh() {
 		// shader mesh
 		let t_vertexShader =  document.getElementById('vertexShader') as HTMLCanvasElement;
 		let t_fragmentShader = document.getElementById('fragmentShader') as HTMLCanvasElement;
-		const geometry = new THREE.PlaneBufferGeometry( 2, 2 );
 		let material = new THREE.ShaderMaterial({
 			uniforms: this.t_uniforms,
 			vertexShader: t_vertexShader && t_vertexShader.textContent ? t_vertexShader.textContent.toString() : undefined,
 			fragmentShader: t_fragmentShader && t_fragmentShader.textContent ? t_fragmentShader.textContent.toString() : undefined
 		});
-		material.transparent = true;
-		material.opacity = 0.5;
+		// material.transparent = true;
 
-		let mesh = new THREE.Mesh( geometry, material );
-		this.scene.add( mesh );
+		this.shaderCube = new THREE.Mesh( new THREE.BoxGeometry(20, 20, 20), material );
+		this.shaderCube.position.set(-100, 100, 100);
+		this.shaderCube.castShadow = true;
+		this.scene.add( this.shaderCube );
+
+		
+		let t_vertexShader2 =  document.getElementById('vertexShader') as HTMLCanvasElement;
+		let t_fragmentShader2 = document.getElementById('fragmentShader2') as HTMLCanvasElement;
+		let material2 = new THREE.ShaderMaterial({
+			uniforms: this.t_uniforms2,
+			vertexShader: t_vertexShader2 && t_vertexShader2.textContent ? t_vertexShader2.textContent.toString() : undefined,
+			fragmentShader: t_fragmentShader2 && t_fragmentShader2.textContent ? t_fragmentShader2.textContent.toString() : undefined
+		});
+		material2.transparent = true;
+		
+		this.shaderPlane = new THREE.Mesh( new THREE.PlaneGeometry(1500, 1500), material2 );
+		this.shaderPlane.rotation.x = -Math.PI / 2;
+		// this.shaderPlane.receiveShadow = true;
+		this.scene.add( this.shaderPlane );
 
 	}
 
@@ -224,9 +283,9 @@ export default class View {
 			segaMini.scale.set(50, 50, 50);
 			segaMini.name = 'segaMini';
 			// this.setSegaTexture(segaMini, 'Normal');
-			// this.setSegaTexture(segaMini, 'Roughness');
+			this.setSegaTexture(segaMini, 'Roughness');
 			// this.setSegaTexture(segaMini, 'Glossiness');
-			this.setSegaTexture(segaMini, 'Diffuse');
+			// this.setSegaTexture(segaMini, 'Diffuse');
 			// this.setSegaTexture(segaMini, 'ior');
 		});
 		// this.porsche = this.loadGLTFModel(porscheGLTF, (porsche: any) => {
@@ -409,6 +468,8 @@ export default class View {
 		// this.t_uniforms[ 'time' ].value = performance.now() / 1000;
 
 		this.cube.rotation.y += this.rotateAngle;
+		this.shaderCube.rotation.y += this.rotateAngle;
+		
 		this.plane.material.normalScale.set(this.normalScale, this.normalScale);
 
 		let dt = this.clock.getDelta();
@@ -417,13 +478,21 @@ export default class View {
 		this.spotLightHelper.update();
 		this.directLight.position.set(500 * Math.cos(this.angle), 300, 500 * Math.sin(this.angle));
 
+		this.t_uniforms[ 'time' ].value += dt * 5;
+		this.t_uniforms2[ 'time' ].value += dt * 2;
+
 		this.adjustCanvasSize();
 		this.controls.update();
 		this.stats.update();
+
+		// this.renderer.clear();
+		// this.composer.render( 0.01 );
+
 	}
 
-	private onWindowResize( event? ) {
+	private onWindowResize( ) {
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
+		// this.composer.setSize( window.innerWidth, window.innerHeight );
 		// this.uniforms.u_resolution.value.x = this.renderer.domElement.width;
 		// this.uniforms.u_resolution.value.y = this.renderer.domElement.height;
 	}

@@ -17,10 +17,16 @@ export default class ViewLession1_1 {
 	private camera: any;
 	private renderer: any;
 	private controls: any;
-	// private axeHelper: any;
-	// private gridHelper: any;
-	// private stats: any;
-	// private gui: any;
+	private axeHelper: any;
+	private gridHelper: any;
+	private stats: any;
+	private gui: any;
+
+	private plane: any;
+	private cube: any;
+	private spotLight: any;
+	private spotLightHelper: any;
+	private directLight: any;
 
 	private lightSpeed: number = 5;
 	private rotateAngle: number = 0.01;
@@ -29,6 +35,7 @@ export default class ViewLession1_1 {
 	private clock = new THREE.Clock();
 
 	private loaderGLTF = new GLTFLoader();
+	private shiba: any;
 	//#endregion
 
 	constructor() {
@@ -42,9 +49,43 @@ export default class ViewLession1_1 {
 
 	private initScene() {
 		// 場景、相機、渲染器...
+		this.scene = new THREE.Scene();
+		// this.camera = new THREE.OrthographicCamera(-window.innerWidth/2, window.innerWidth/2, window.innerHeight/2, -window.innerHeight/2, 0.1, 10000); // 正交
+		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000); // 透視
+		this.renderer = new THREE.WebGL1Renderer({
+			antialias: true,
+			canvas: document.getElementById('main-canvas') as HTMLCanvasElement,
+		});
+
+		this.renderer.setPixelRatio(window.devicePixelRatio);
+		this.renderer.shadowMap.enabled = true;
+		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+
+		this.camera.position.set(0, 500, 1000);
+		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+		this.scene.add(this.camera);
+
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setClearColor(new THREE.Color(0x888888));
+
+		this.axeHelper = new THREE.AxesHelper(2000);
+		this.axeHelper.position.set(0, 2, 0);
+		// this.scene.add(this.axeHelper);
+
+		// (多大, 分幾格)
+		this.gridHelper = new THREE.GridHelper(1500, 15);
+		this.gridHelper.position.set(0, 1, 0);
+		// this.scene.add(this.gridHelper);
+
+		this.stats = Stats();
+		document.body.appendChild(this.stats.dom);
+
+		this.onWindowResize = this.onWindowResize.bind(this);
 
 		this.onWindowResize();
-		window.addEventListener( 'resize', this.onWindowResize, false );
+		window.addEventListener( 'resize', this.onWindowResize );
 	}
 
 	private initLight() {
@@ -150,12 +191,13 @@ export default class ViewLession1_1 {
 		this.renderer.render(this.scene, this.camera);
 		requestAnimationFrame(() => this.render());
 
+		// 利用三角函數與這個angle就能做到公轉
 		let dt = this.clock.getDelta();
 		this.angle += dt / this.lightSpeed;
 
 		this.adjustCanvasSize();
 		this.controls.update();
-		// this.stats.update();
+		this.stats.update();
 	}
 
 	private onWindowResize( event? ) {
