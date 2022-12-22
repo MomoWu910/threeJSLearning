@@ -5,7 +5,6 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module';
 import * as THREE from 'three';
 
-
 // import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 // import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 // import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
@@ -247,9 +246,10 @@ export default class View {
 			vertexShader: t_vertexShader && t_vertexShader.textContent ? t_vertexShader.textContent.toString() : undefined,
 			fragmentShader: t_fragmentShader && t_fragmentShader.textContent ? t_fragmentShader.textContent.toString() : undefined
 		});
-		// material.transparent = true;
+		material.transparent = true;
+		// material.opacity = 0.8;
 
-		this.shaderCube = new THREE.Mesh( new THREE.BoxGeometry(20, 20, 20), material );
+		this.shaderCube = new THREE.Mesh( new THREE.BoxGeometry(30, 30, 30), material );
 		this.shaderCube.position.set(-100, 100, 100);
 		this.shaderCube.castShadow = true;
 		this.scene.add( this.shaderCube );
@@ -266,7 +266,7 @@ export default class View {
 		
 		this.shaderPlane = new THREE.Mesh( new THREE.PlaneGeometry(1500, 1500), material2 );
 		this.shaderPlane.rotation.x = -Math.PI / 2;
-		// this.shaderPlane.receiveShadow = true;
+		this.shaderPlane.receiveShadow = true;
 		this.scene.add( this.shaderPlane );
 
 	}
