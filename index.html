@@ -113,11 +113,16 @@
 
     varying vec2 vUv;
 
+    attribute float aRandom2;
+    
     void main()
     {
       vUv = uv;
-      vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-      gl_Position = projectionMatrix * mvPosition;
+      vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+      modelPosition.y += aRandom2 * 0.1;
+      vec4 viewPosition = viewMatrix * modelPosition;
+      vec4 projectionPosition = projectionMatrix * viewPosition;
+      gl_Position = projectionPosition;
     }
 
   </script>
@@ -125,11 +130,16 @@
     varying vec2 vUv;
     uniform vec2 uvScale;
 
+    attribute float aRandom;
+
     void main()	{
 
       vUv = uvScale * uv;
-      vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-      gl_Position = projectionMatrix * mvPosition;
+      vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+      modelPosition.y += aRandom * 0.1;
+      vec4 viewPosition = viewMatrix * modelPosition;
+      vec4 projectionPosition = projectionMatrix * viewPosition;
+      gl_Position = projectionPosition;
 
     }
   </script>
