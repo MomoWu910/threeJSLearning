@@ -1,6 +1,4 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module';
 import * as THREE from 'three';
@@ -15,27 +13,7 @@ const stoneNTexture = '../../res/texture/stoneN.png';
 const cloudTexture = '../../res/texture/cloud.png';
 const lavaTexture = '../../res/texture/lavatile.jpg';
 
-const shibaGLTF = '../../res/model/shiba/shiba.gltf';
-
-const segaMiniOBJ = '../../res/model/segamini/uploads_files_955368_SEGA2607.obj';
-const texturePathArr = {
-	segaMini_Roughness_Upper: '../../res/model/segamini/textures/Roughness/SEGA_Upper_Part_UNW_01_Roughness.jpg', // Roughness 斑駁
-	segaMini_Roughness_Bottom: '../../res/model/segamini/textures/Roughness/SEGA_Bottom_Part_UNW_01_Roughness.jpg',
-	segaMini_Roughness_Vent: '../../res/model/segamini/textures/Roughness/SEGA_Vent_Part_UNW_01_Roughness.jpg',
-	segaMini_Normal_Upper: '../../res/model/segamini/textures/Normal/SEGA_Upper_Part_UNW_01_Normal.jpg', // Normal
-	segaMini_Normal_Bottom: '../../res/model/segamini/textures/Normal/SEGA_Bottom_Part_UNW_01_Normal.jpg',
-	segaMini_Normal_Vent: '../../res/model/segamini/textures/Normal/SEGA_Vent_Part_UNW_01_Normal.jpg',
-	segaMini_Glossiness_Upper: '../../res/model/segamini/textures/Glossiness/SEGA_Upper_Part_UNW_01_Glossiness.jpg', // Glossiness
-	segaMini_Glossiness_Bottom: '../../res/model/segamini/textures/Glossiness/SEGA_Bottom_Part_UNW_01_Glossiness.jpg',
-	segaMini_Glossiness_Vent: '../../res/model/segamini/textures/Glossiness/SEGA_Vent_Part_UNW_01_Glossiness.jpg',
-	segaMini_Diffuse_Upper: '../../res/model/segamini/textures/Diffuse/SEGA_Upper_Part_UNW_01_Diffuse.jpg', // Diffuse
-	segaMini_Diffuse_Bottom: '../../res/model/segamini/textures/Diffuse/SEGA_Bottom_Part_UNW_01_Diffuse.jpg',
-	segaMini_Diffuse_Vent: '../../res/model/segamini/textures/Diffuse/SEGA_Vent_Part_UNW_01_Diffuse.jpg',
-	segaMini_ior_Upper: '../../res/model/segamini/textures/ior/SEGA_Upper_Part_UNW_01_ior.jpg', // ior
-	segaMini_ior_Bottom: '../../res/model/segamini/textures/ior/SEGA_Bottom_Part_UNW_01_ior.jpg',
-}
-
-export default class ViewLession3_1 {
+export default class ViewLession4_1 {
 	//#region 宣告變數
 	private scene: any;
 	private camera: any;
@@ -60,12 +38,6 @@ export default class ViewLession3_1 {
 	private angle: number = 0;
 	private clock = new THREE.Clock();
 
-	private loaderGLTF = new GLTFLoader();
-	private shiba: any;
-
-	private loaderOBJ = new OBJLoader();
-	private segaMini: any;
-
 	private t_uniforms: any = {};
 	private t_uniforms2: any = {};
 	private shaderCube: any;
@@ -78,7 +50,6 @@ export default class ViewLession3_1 {
 		this.initLight();
 		this.initMesh();
 		this.initShaderMesh();
-		this.initModel();
 		this.initGui();
 		this.render();
 	}
@@ -227,80 +198,13 @@ export default class ViewLession3_1 {
 
 	}
 
-	private initModel() {
-		this.shiba = this.loadGLTFModel(shibaGLTF, (shiba: any) => {
-			shiba.position.set(-100, 100, 0);
-			shiba.scale.set(100, 100, 100);
-			shiba.name = 'shiba';
-		});
-
-		this.segaMini = this.loadOBJModel(segaMiniOBJ, (segaMini: any) => {
-			segaMini.position.set(-230, 40, 0);
-			segaMini.scale.set(50, 50, 50);
-			segaMini.name = 'segaMini';
-			// this.setSegaTexture(segaMini, 'Normal');
-			this.setSegaTexture(segaMini, 'Roughness');
-			// this.setSegaTexture(segaMini, 'Glossiness');
-			// this.setSegaTexture(segaMini, 'Diffuse');
-			// this.setSegaTexture(segaMini, 'ior');
-		});
-	}
-
 	private initGui() {
 		this.gui = new GUI();
+		console.warn(this.gui.domElement);
 		this.gui.add(this, 'lightSpeed', 0.1, 5.0);
 		this.gui.add(this, 'rotateAngle', -1.0, 1.0);
 		this.gui.add(this, 'normalScale', 0, 1.0);
-		console.log(this.gui.domElement);
-	}
-
-	private loadGLTFModel(path: string, callback: any) {
-		this.loaderGLTF.load(path, (gltf) => {
-			// onload
-			this.scene.add(gltf.scene);
-			gltf.scene.castShadow = true;
-			gltf.scene.receiveShadow = true;
-			this.setObjCastShow(gltf.scene);
-			this.setObjReceiveShow(gltf.scene);
-
-			if (callback) callback(gltf.scene);
-
-			console.log(gltf.scene, gltf.scene.name);
-
-			return gltf.scene;
-		}, (xhr) => {
-			// onprogress 沒甚麼用
-			// console.log((xhr.loaded / xhr.timeStamp * 100) + '% loaded');
-		}, (err) => {
-			// onerror
-			console.error(err);
-		}
-		);
-	}
-
-	private loadOBJModel(path: string, callback: any) {
-		this.loaderOBJ.load(path, (obj) => {
-				this.scene.add(obj);
-				obj.castShadow = true;
-				obj.receiveShadow = true;
-				this.setObjCastShow(obj);
-				this.setObjReceiveShow(obj);
-				// this.setObjColor(obj, 0x000000);
-
-				if (callback) callback(obj);
-
-				console.log(obj, obj.name);
-
-				return obj;
-			},
-			function ( xhr ) {
-				console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
-			},
-			// onError回调
-			function ( err ) {
-				console.error( 'An error happened' );
-			}
-		);
+		console.warn(this.gui.domElement);
 	}
 
 	private setShadowSize(light1: any, sz: number = 0, mapSz: number = 0) {
@@ -352,39 +256,6 @@ export default class ViewLession3_1 {
 		});
 	}
 
-	private setSegaTexture(obj: any, theme: string) {
-		const textureLoader = new THREE.TextureLoader();
-		let upperTexturePath: string = '', bottomTexturePath: string = '', ventTexturePath: string = '';
-		switch (theme) {
-			case 'Normal':
-			case 'Roughness':
-			case 'Glossiness':
-			case 'Diffuse':
-				upperTexturePath = texturePathArr['segaMini_'+theme+'_Upper'];
-				bottomTexturePath = texturePathArr['segaMini_'+theme+'_Bottom'];
-				ventTexturePath = texturePathArr['segaMini_'+theme+'_Vent'];
-				break;
-			case 'ior':
-				upperTexturePath = texturePathArr['segaMini_'+theme+'_Upper'];
-				bottomTexturePath = texturePathArr['segaMini_'+theme+'_Bottom'];
-				break;
-		
-			default:
-				break;
-		}
-		let texture;
-		obj.traverse((child: any) => {
-			if (child.isMesh) {
-				if(child.name.includes('Upper')) texture = textureLoader.load(upperTexturePath);
-				else if(child.name.includes('Bottom')) texture = textureLoader.load(bottomTexturePath);
-				else if(child.name.includes('Vent')) texture = textureLoader.load(ventTexturePath);
-				else texture = textureLoader.load(upperTexturePath);
-
-				child.material.map = texture;
-			}
-		});
-	}
-
 	private adjustCanvasSize() {
 		this.renderer.setSize(innerWidth, innerHeight);
 		this.camera.aspect = innerWidth / innerHeight;
@@ -394,9 +265,6 @@ export default class ViewLession3_1 {
 	private render() {
 		this.renderer.render(this.scene, this.camera);
 		requestAnimationFrame(() => this.render());
-
-		this.cube.rotation.y += this.rotateAngle;
-		this.shaderCube.rotation.y += this.rotateAngle;
 		
 		this.plane.material.normalScale.set(this.normalScale, this.normalScale);
 

@@ -4,6 +4,7 @@ var webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
+    cache: false,
     mode: 'development',
     entry: {
         index: './src/app.ts',
