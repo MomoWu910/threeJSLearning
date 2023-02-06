@@ -13,6 +13,10 @@ const stoneNTexture = '../../res/texture/stoneN.png';
 const cloudTexture = '../../res/texture/cloud.png';
 const lavaTexture = '../../res/texture/lavatile.jpg';
 
+const vertexShader = require('./shader1.vert');
+const fragmentShader = require('./shader1.frag');
+import { shader1 } from './shader1.js';
+
 export default class ViewLession4_1 {
 	//#region 宣告變數
 	private scene: any;
@@ -147,31 +151,20 @@ export default class ViewLession4_1 {
 	}
 
 	private initShader() {
-		const textureLoader = new THREE.TextureLoader();
 		this.t_uniforms = {
 			time: { value: 1.0 },
 		};
-		this.t_uniforms2 = {
-			time: { value: 1.0 },
-			fogDensity: { value: 0 },
-			fogColor: { value: new THREE.Vector3( 0, 0, 0 ) },
-			uvScale: { value: new THREE.Vector2( 3.0, 1.0 ) },
-			texture1: { value: textureLoader.load(cloudTexture) },
-			texture2: { value: textureLoader.load(lavaTexture) }
-		};
-		
-		this.t_uniforms2[ 'texture1' ].value.wrapS = this.t_uniforms2[ 'texture1' ].value.wrapT = THREE.RepeatWrapping;
-		this.t_uniforms2[ 'texture2' ].value.wrapS = this.t_uniforms2[ 'texture2' ].value.wrapT = THREE.RepeatWrapping;
 	}
 
 	private initShaderMesh() {
 		// shader mesh
-		let t_vertexShader =  document.getElementById('vertexShader') as HTMLCanvasElement;
-		let t_fragmentShader = document.getElementById('fragmentShader') as HTMLCanvasElement;
+		let t_vertexShader = shader1.vertexShader;
+		let t_fragmentShader = shader1.fragmentShader;
+		console.warn(t_vertexShader);
 		let material = new THREE.ShaderMaterial({
 			uniforms: this.t_uniforms,
-			vertexShader: t_vertexShader && t_vertexShader.textContent ? t_vertexShader.textContent.toString() : undefined,
-			fragmentShader: t_fragmentShader && t_fragmentShader.textContent ? t_fragmentShader.textContent.toString() : undefined
+			vertexShader: t_vertexShader,
+			fragmentShader: t_fragmentShader
 		});
 		material.transparent = true;
 
@@ -180,31 +173,15 @@ export default class ViewLession4_1 {
 		this.shaderCube.castShadow = true;
 		this.scene.add( this.shaderCube );
 
-		
-		let t_vertexShader2 =  document.getElementById('vertexShader2') as HTMLCanvasElement;
-		let t_fragmentShader2 = document.getElementById('fragmentShader2') as HTMLCanvasElement;
-		let material2 = new THREE.ShaderMaterial({
-			uniforms: this.t_uniforms2,
-			vertexShader: t_vertexShader2 && t_vertexShader2.textContent ? t_vertexShader2.textContent.toString() : undefined,
-			fragmentShader: t_fragmentShader2 && t_fragmentShader2.textContent ? t_fragmentShader2.textContent.toString() : undefined
-		});
-        material2.transparent = true;
-        
-		
-		this.shaderPlane = new THREE.Mesh( new THREE.PlaneGeometry(1500, 1500), material2 );
-		this.shaderPlane.rotation.x = -Math.PI / 2;
-        this.shaderPlane.receiveShadow = true;
-        this.scene.add( this.shaderPlane );
-
 	}
 
 	private initGui() {
 		this.gui = new GUI();
-		console.warn(this.gui.domElement);
+		// console.warn(this.gui.domElement);
 		this.gui.add(this, 'lightSpeed', 0.1, 5.0);
 		this.gui.add(this, 'rotateAngle', -1.0, 1.0);
 		this.gui.add(this, 'normalScale', 0, 1.0);
-		console.warn(this.gui.domElement);
+		// console.warn(this.gui.domElement);
 	}
 
 	private setShadowSize(light1: any, sz: number = 0, mapSz: number = 0) {
@@ -275,7 +252,6 @@ export default class ViewLession4_1 {
 		this.directLight.position.set(500 * Math.cos(this.angle), 300, 500 * Math.sin(this.angle));
 
 		this.t_uniforms[ 'time' ].value += dt * 5;
-		this.t_uniforms2[ 'time' ].value += dt * 2;
 
 		this.adjustCanvasSize();
 		this.controls.update();
