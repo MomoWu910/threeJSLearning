@@ -1,14 +1,14 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import Stats from 'three/examples/jsm/libs/stats.module';
 import { VertexNormalsHelper } from 'three/examples/jsm/helpers/VertexNormalsHelper.js'
+import Stats from 'three/examples/jsm/libs/stats.module';
 import * as THREE from 'three';
 
 const stoneTexture = '../../res/texture/stone.png';
 const stoneNTexture = '../../res/texture/stoneN.png';
 
-import { shader4_1 } from './shader4_1';
+import { shader4_2 } from './shader4_2';
 
-export default class ViewLession4_1 {
+export default class ViewLession4_2 {
 	//#region 宣告變數
 	private scene: any;
 	private camera: any;
@@ -18,9 +18,16 @@ export default class ViewLession4_1 {
 	private gridHelper: any;
 	private stats: any;
 
+	private plane: any;
 	private cube: any;
+	private spotLight: any;
+	private spotLightHelper: any;
 	private directLight: any;
 
+	private lightSpeed: number = 5;
+	private rotateAngle: number = 0.01;
+	private normalScale: number = 1;
+	private angle: number = 0;
 	private clock = new THREE.Clock();
 
 	private t_uniforms: any = {};
@@ -32,7 +39,7 @@ export default class ViewLession4_1 {
 		this.initShader();
 		this.initLight();
 		this.initMesh();
-		this.initShaderMesh();
+		// this.initShaderMesh();
 		this.render();
 	}
 
@@ -51,7 +58,7 @@ export default class ViewLession4_1 {
 
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
-		this.camera.position.set(0, 0, 1000);
+		this.camera.position.set(0, 500, 1000);
 		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 		this.scene.add(this.camera);
 
@@ -79,13 +86,20 @@ export default class ViewLession4_1 {
 		const light = new THREE.AmbientLight(0x404040); // soft white light
 		this.scene.add(light);
 
+		this.spotLight = new THREE.SpotLight(0xFFFFFF, 3, 2000, Math.PI / 4, 0.5);
+		this.spotLight.castShadow = true;
+		this.spotLight.position.set(0, 300, 500);
+		this.spotLight.shadow.bias = -0.0005; // 消除影子線條
+		this.spotLightHelper = new THREE.SpotLightHelper(this.spotLight);
+		this.scene.add(this.spotLightHelper);
+
 		this.directLight = new THREE.DirectionalLight(0xffffff, 1.5);
 		this.directLight.castShadow = true;
 		this.directLight.shadow.bias = -0.0005; // 消除影子線條
 		this.scene.add(this.directLight.target);
 		this.setShadowSize(this.directLight, 1000, 2048);// 目前版本directLight 需要設定光照範圍以及座標才能正確照到
-		this.directLight.position.set(0, 0, 1.75);
-		this.directLight.position.multiplyScalar(1000);
+		this.directLight.position.set(0, 1.75, 0);
+		this.directLight.position.multiplyScalar(100);
 		this.directLight.shadow.camera.far = 10000;
 		this.scene.add(this.directLight);
 	}
@@ -105,12 +119,19 @@ export default class ViewLession4_1 {
 		const materialPhongStone = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide, map: stone, normalMap: stoneN });
 		const materialPhong = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
 
+		// 地板
+		const planeG = new THREE.PlaneGeometry(1500, 1500);
+		this.plane = new THREE.Mesh(planeG, materialPhongStone);
+		this.plane.rotation.x = -Math.PI / 2;
+		this.plane.receiveShadow = true;
+		this.scene.add(this.plane);
+
 		// // 方塊
 		const boxGeometry = new THREE.BoxGeometry(20, 20, 20);
 		this.cube = new THREE.Mesh(boxGeometry, materialPhong);
 		this.cube.position.set(100, 100, 100);
 		this.cube.castShadow = true;
-		// this.scene.add(this.cube);
+		this.scene.add(this.cube);
 
 	}
 
@@ -122,8 +143,9 @@ export default class ViewLession4_1 {
 
 	private initShaderMesh() {
 		// shader mesh
-		let t_vertexShader = shader4_1.vertexShader;
-		let t_fragmentShader = shader4_1.fragmentShader;
+		let t_vertexShader = shader4_2.vertexShader;
+		let t_fragmentShader = shader4_2.fragmentShader;
+		// console.warn(t_vertexShader);
 		let material = new THREE.ShaderMaterial({
 			uniforms: this.t_uniforms,
 			vertexShader: t_vertexShader,
@@ -132,12 +154,12 @@ export default class ViewLession4_1 {
 		});
 		material.transparent = true;
 
-		this.shaderMesh = new THREE.Mesh( new THREE.SphereGeometry(100,32,32), material );
+		this.shaderMesh = new THREE.Mesh( new THREE.SphereGeometry(50,50,50), material );
         this.shaderMesh.receiveShadow = true;
         this.scene.add( this.shaderMesh );
 
 		const helper = new VertexNormalsHelper( this.shaderMesh, 5, 0xff0000 );
-		// this.scene.add( helper );
+		this.scene.add( helper );
 
 	}
 
@@ -161,7 +183,13 @@ export default class ViewLession4_1 {
 		this.renderer.render(this.scene, this.camera);
 		requestAnimationFrame(() => this.render());
 		
+		this.plane.material.normalScale.set(this.normalScale, this.normalScale);
+
 		let dt = this.clock.getDelta();
+		this.angle += dt / this.lightSpeed;
+		this.spotLight.position.set(500 * Math.cos(this.angle), 300, 500 * Math.sin(this.angle));
+		this.spotLightHelper.update();
+		this.directLight.position.set(500 * Math.cos(this.angle), 300, 500 * Math.sin(this.angle));
 
 		this.t_uniforms[ 'time' ].value += dt * 0.5;
 

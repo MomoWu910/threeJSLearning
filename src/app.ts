@@ -17,6 +17,7 @@ import ViewLession3_1 from './scene/lession3/ViewLession3_1';
 
 
 import ViewLession4_1 from './scene/lession4/ViewLession4_1';
+import ViewLession4_2 from './scene/lession4/ViewLession4_2';
 
 if (module.hot) {
     module.hot.accept();
@@ -39,4 +40,5 @@ if (module.hot) {
 
 // new ViewLession3_1(); // shader
 
-new ViewLession4_1(); // shader
+new ViewLession4_1(); // 光暈的故事
+// new ViewLession4_2(); // shader
