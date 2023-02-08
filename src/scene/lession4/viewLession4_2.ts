@@ -5,8 +5,9 @@ import * as THREE from 'three';
 
 const stoneTexture = '../../res/texture/stone.png';
 const stoneNTexture = '../../res/texture/stoneN.png';
+const sunTexture = '../../res/texture/sunMap.jpeg';
 
-import { shader4_2 } from './shader4_2';
+import { shader4_2, shader4_2_2 } from './shader4_2';
 
 export default class ViewLession4_2 {
 	//#region 宣告變數
@@ -18,8 +19,7 @@ export default class ViewLession4_2 {
 	private gridHelper: any;
 	private stats: any;
 
-	private plane: any;
-	private cube: any;
+	private sphere: any;
 	private spotLight: any;
 	private spotLightHelper: any;
 	private directLight: any;
@@ -39,7 +39,7 @@ export default class ViewLession4_2 {
 		this.initShader();
 		this.initLight();
 		this.initMesh();
-		// this.initShaderMesh();
+		this.initShaderMesh();
 		this.render();
 	}
 
@@ -58,7 +58,7 @@ export default class ViewLession4_2 {
 
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
-		this.camera.position.set(0, 500, 1000);
+		this.camera.position.set(0, 0, 1000);
 		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 		this.scene.add(this.camera);
 
@@ -91,7 +91,7 @@ export default class ViewLession4_2 {
 		this.spotLight.position.set(0, 300, 500);
 		this.spotLight.shadow.bias = -0.0005; // 消除影子線條
 		this.spotLightHelper = new THREE.SpotLightHelper(this.spotLight);
-		this.scene.add(this.spotLightHelper);
+		// this.scene.add(this.spotLightHelper);
 
 		this.directLight = new THREE.DirectionalLight(0xffffff, 1.5);
 		this.directLight.castShadow = true;
@@ -101,7 +101,7 @@ export default class ViewLession4_2 {
 		this.directLight.position.set(0, 1.75, 0);
 		this.directLight.position.multiplyScalar(100);
 		this.directLight.shadow.camera.far = 10000;
-		this.scene.add(this.directLight);
+		// this.scene.add(this.directLight);
 	}
 
 	private initMesh() {
@@ -115,51 +115,53 @@ export default class ViewLession4_2 {
 		stoneN.wrapT = THREE.RepeatWrapping;
 		stoneN.repeat.set(4, 4);
 
+		const sun = new THREE.TextureLoader().load(sunTexture);
+
 		// 材質
 		const materialPhongStone = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide, map: stone, normalMap: stoneN });
 		const materialPhong = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
-
-		// 地板
-		const planeG = new THREE.PlaneGeometry(1500, 1500);
-		this.plane = new THREE.Mesh(planeG, materialPhongStone);
-		this.plane.rotation.x = -Math.PI / 2;
-		this.plane.receiveShadow = true;
-		this.scene.add(this.plane);
+		const materialPhongSun = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: sun});
 
 		// // 方塊
-		const boxGeometry = new THREE.BoxGeometry(20, 20, 20);
-		this.cube = new THREE.Mesh(boxGeometry, materialPhong);
-		this.cube.position.set(100, 100, 100);
-		this.cube.castShadow = true;
-		this.scene.add(this.cube);
+		const sphereGeometry = new THREE.SphereGeometry(100, 32, 32);
+		this.sphere = new THREE.Mesh(sphereGeometry, materialPhongSun);
+		// this.sphere.position.set(100, 100, 100);
+		this.sphere.castShadow = true;
+		// this.scene.add(this.sphere);
 
 	}
 
 	private initShader() {
+		const textureLoader = new THREE.TextureLoader();
 		this.t_uniforms = {
 			time: { value: 1.0 },
+			textureSun: { value: textureLoader.load(sunTexture) }
 		};
+		this.t_uniforms[ 'textureSun' ].value.wrapS = this.t_uniforms[ 'textureSun' ].value.wrapT = THREE.RepeatWrapping;
 	}
 
 	private initShaderMesh() {
 		// shader mesh
-		let t_vertexShader = shader4_2.vertexShader;
-		let t_fragmentShader = shader4_2.fragmentShader;
+		let t_vertexShader = shader4_2_2.vertexShader;
+		let t_fragmentShader = shader4_2_2.fragmentShader;
 		// console.warn(t_vertexShader);
 		let material = new THREE.ShaderMaterial({
 			uniforms: this.t_uniforms,
 			vertexShader: t_vertexShader,
 			fragmentShader: t_fragmentShader,
-			side: THREE.DoubleSide
+			side: THREE.DoubleSide,
+			transparent: true,
+			// blending: THREE.AdditiveBlending,
 		});
-		material.transparent = true;
 
-		this.shaderMesh = new THREE.Mesh( new THREE.SphereGeometry(50,50,50), material );
+		// this.shaderMesh = new THREE.Mesh( new THREE.SphereGeometry(500,10,10), material );
+		// this.shaderMesh = new THREE.Mesh( new THREE.CircleGeometry(500,100,100), material );  // 波浪
+		this.shaderMesh = new THREE.Mesh( new THREE.PlaneGeometry(500,500,10,10), material ); // 波浪
         this.shaderMesh.receiveShadow = true;
         this.scene.add( this.shaderMesh );
 
 		const helper = new VertexNormalsHelper( this.shaderMesh, 5, 0xff0000 );
-		this.scene.add( helper );
+		// this.scene.add( helper );
 
 	}
 
@@ -183,7 +185,6 @@ export default class ViewLession4_2 {
 		this.renderer.render(this.scene, this.camera);
 		requestAnimationFrame(() => this.render());
 		
-		this.plane.material.normalScale.set(this.normalScale, this.normalScale);
 
 		let dt = this.clock.getDelta();
 		this.angle += dt / this.lightSpeed;

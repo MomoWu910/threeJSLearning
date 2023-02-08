@@ -1,3 +1,11 @@
+// before
+/**
+ * 1. uv
+ * 2. space
+ * 3. uniform, varying, attribute, version
+ */
+
+
 // 光暈的故事
 /**
  * tip
@@ -42,6 +50,9 @@
  *      1.05 -> 1.45
  *      * ceil(intensity*10.)/10.;
  *      + vec4(0.,0.,0.2,1.); -> + vec4(0.2,0.2,0.4,1.);
+ * 
+ *   簡單效果清單，方便學員後續參考
+ *   編輯器工具
  */
 
 const shader4_1 = {

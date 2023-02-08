@@ -40,5 +40,5 @@ if (module.hot) {
 
 // new ViewLession3_1(); // shader
 
-new ViewLession4_1(); // 光暈的故事
-// new ViewLession4_2(); // shader
+// new ViewLession4_1(); // 光暈的故事
+new ViewLession4_2(); // 太陽
