@@ -6,8 +6,10 @@ import * as THREE from 'three';
 const stoneTexture = '../../res/texture/stone.png';
 const stoneNTexture = '../../res/texture/stoneN.png';
 const sunTexture = '../../res/texture/sunMap.jpeg';
+const cloudTexture = '../../res/texture/cloud.png';
+const lavaTexture = '../../res/texture/lavatile.jpg';
 
-import { shader4_2, shader4_2_2 } from './shader4_2';
+import { shader4_2_1, shader4_2_2, shader4_2_3 } from './shader4_2';
 
 export default class ViewLession4_2 {
 	//#region 宣告變數
@@ -134,16 +136,24 @@ export default class ViewLession4_2 {
 	private initShader() {
 		const textureLoader = new THREE.TextureLoader();
 		this.t_uniforms = {
-			time: { value: 1.0 },
-			textureSun: { value: textureLoader.load(sunTexture) }
+			uTime: { value: 1.0 },
+			// textureSun: { value: textureLoader.load(lavaTexture) },
+            fogDensity: { value: 0 },
+			fogColor: { value: new THREE.Vector3( 0, 0, 0 ) },
+            texture1: { value: textureLoader.load(cloudTexture) },
+			texture2: { value: textureLoader.load(lavaTexture) },
+            uResolution: {
+                value: [window.innerHeight,window.innerWidth]
+            }
 		};
-		this.t_uniforms[ 'textureSun' ].value.wrapS = this.t_uniforms[ 'textureSun' ].value.wrapT = THREE.RepeatWrapping;
+		this.t_uniforms[ 'texture1' ].value.wrapS = this.t_uniforms[ 'texture1' ].value.wrapT = THREE.RepeatWrapping;
+		this.t_uniforms[ 'texture2' ].value.wrapS = this.t_uniforms[ 'texture2' ].value.wrapT = THREE.RepeatWrapping;
 	}
 
 	private initShaderMesh() {
 		// shader mesh
-		let t_vertexShader = shader4_2_2.vertexShader;
-		let t_fragmentShader = shader4_2_2.fragmentShader;
+		let t_vertexShader = shader4_2_3.vertexShader;
+		let t_fragmentShader = shader4_2_3.fragmentShader;
 		// console.warn(t_vertexShader);
 		let material = new THREE.ShaderMaterial({
 			uniforms: this.t_uniforms,
@@ -192,7 +202,7 @@ export default class ViewLession4_2 {
 		this.spotLightHelper.update();
 		this.directLight.position.set(500 * Math.cos(this.angle), 300, 500 * Math.sin(this.angle));
 
-		this.t_uniforms[ 'time' ].value += dt * 0.5;
+		this.t_uniforms[ 'uTime' ].value += dt * 0.5;
 
 		this.adjustCanvasSize();
 		this.controls.update();
