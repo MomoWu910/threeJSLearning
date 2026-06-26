@@ -5,12 +5,6 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module';
 import * as THREE from 'three';
 
-// import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-// import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-// import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
-// import { BloomPass } from 'three/examples/jsm/postprocessing/BloomPass.js';
-
-
 const grassTexture = '../../res/texture/grass.png';
 const grassBlackMapTexture = '../../res/texture/grassBlack.png';
 const grassWhiteMapTexture = '../../res/texture/grassWhite.png';
@@ -21,12 +15,7 @@ const stoneNTexture = '../../res/texture/stoneN.png';
 const cloudTexture = '../../res/texture/cloud.png';
 const lavaTexture = '../../res/texture/lavatile.jpg';
 
-const porscheGLTF = '../../res/model/porsche/porsche.gltf';
 const shibaGLTF = '../../res/model/shiba/shiba.gltf';
-const godzillaGLTF = '../../res/model/godzilla/godzilla.gltf';
-const bananaGLTF = '../../res/model/banana/banana.glb';
-const rathalosGLTF = '../../res/model/rathalos/rathalos.gltf';
-const bitcoinGLTF = '../../res/model/bitcoin2/bitcoin2.gltf';
 
 const segaMiniOBJ = '../../res/model/segamini/uploads_files_955368_SEGA2607.obj';
 const texturePathArr = {
@@ -46,7 +35,7 @@ const texturePathArr = {
 	segaMini_ior_Bottom: '../../res/model/segamini/textures/ior/SEGA_Bottom_Part_UNW_01_ior.jpg',
 }
 
-export default class View {
+export default class ViewLession3_1 {
 	//#region 宣告變數
 	private scene: any;
 	private camera: any;
@@ -72,12 +61,7 @@ export default class View {
 	private clock = new THREE.Clock();
 
 	private loaderGLTF = new GLTFLoader();
-	private porsche: any;
 	private shiba: any;
-	private godzilla: any;
-	private banana: any;
-	private rathalos: any;
-	private bitcoin: any;
 
 	private loaderOBJ = new OBJLoader();
 	private segaMini: any;
@@ -86,12 +70,6 @@ export default class View {
 	private t_uniforms2: any = {};
 	private shaderCube: any;
 	private shaderPlane: any;
-
-
-	// private renderModel: any;
-	// private effectBloom : any;
-	// private effectFilm: any;
-	// private composer: any;
 	//#endregion
 
 	constructor() {
@@ -115,7 +93,6 @@ export default class View {
 		});
 
 		this.renderer.setPixelRatio(window.devicePixelRatio);
-		// this.renderer.autoClear = false;
 		this.renderer.shadowMap.enabled = true;
 		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
 
@@ -140,18 +117,6 @@ export default class View {
 		this.stats = Stats();
 		document.body.appendChild(this.stats.dom);
 
-		
-		// this.renderModel = new RenderPass( this.scene, this.camera );
-		// this.effectBloom = new BloomPass( 1.25 );
-		// this.effectFilm = new FilmPass( 0.35, 0.95, 2048, undefined );
-
-		// this.composer = new EffectComposer( this.renderer );
-
-		// this.composer.addPass( this.renderModel );
-		// this.composer.addPass( this.effectBloom );
-		// this.composer.addPass( this.effectFilm );
-
-
 		this.onWindowResize = this.onWindowResize.bind(this);
 		this.onWindowResize();
 		window.addEventListener( 'resize', this.onWindowResize, false );
@@ -166,7 +131,6 @@ export default class View {
 		this.spotLight.position.set(0, 300, 500);
 		this.spotLight.shadow.bias = -0.0005; // 消除影子線條
 		this.spotLightHelper = new THREE.SpotLightHelper(this.spotLight);
-		// this.scene.add(this.spotLight, this.spotLightHelper);
 
 		this.directLight = new THREE.DirectionalLight(0xffffff, 1.5);
 		this.directLight.castShadow = true;
@@ -181,8 +145,6 @@ export default class View {
 
 	private initMesh() {
 		// 花色
-		const grass = new THREE.TextureLoader().load(grassTexture);
-		const grassNormal = new THREE.TextureLoader().load(grassNormalMapTexture);
 		const stone = new THREE.TextureLoader().load(stoneTexture);
 		stone.wrapS = THREE.RepeatWrapping;
 		stone.wrapT = THREE.RepeatWrapping;
@@ -193,12 +155,8 @@ export default class View {
 		stoneN.repeat.set(4, 4);
 
 		// 材質
-		const materialBasic = new THREE.MeshBasicMaterial({ color: 0x222222, side: THREE.DoubleSide });
-		const materialNormal = new THREE.MeshNormalMaterial();
-		const materialPhongGrass = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide, map: grass, normalMap: grassNormal });
 		const materialPhongStone = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide, map: stone, normalMap: stoneN });
 		const materialPhong = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
-		const materialLambert = new THREE.MeshLambertMaterial({ color: 0x555555, side: THREE.DoubleSide });
 
 		// 地板
 		const planeG = new THREE.PlaneGeometry(1500, 1500);
@@ -209,12 +167,10 @@ export default class View {
 		this.scene.add(this.plane);
 
 		// // 方塊
-		const sphereGeometry = new THREE.SphereGeometry(50, 32, 32);
 		const boxGeometry = new THREE.BoxGeometry(20, 20, 20);
 		this.cube = new THREE.Mesh(boxGeometry, materialPhong);
 		this.cube.position.set(100, 100, 100);
 		this.cube.castShadow = true;
-		// this.cube.receiveShadow = true;
 		this.scene.add(this.cube);
 
 	}
@@ -247,7 +203,6 @@ export default class View {
 			fragmentShader: t_fragmentShader && t_fragmentShader.textContent ? t_fragmentShader.textContent.toString() : undefined
 		});
 		material.transparent = true;
-		// material.opacity = 0.8;
 
 		this.shaderCube = new THREE.Mesh( new THREE.BoxGeometry(30, 30, 30), material );
 		this.shaderCube.position.set(-100, 100, 100);
@@ -255,19 +210,20 @@ export default class View {
 		this.scene.add( this.shaderCube );
 
 		
-		let t_vertexShader2 =  document.getElementById('vertexShader') as HTMLCanvasElement;
+		let t_vertexShader2 =  document.getElementById('vertexShader2') as HTMLCanvasElement;
 		let t_fragmentShader2 = document.getElementById('fragmentShader2') as HTMLCanvasElement;
 		let material2 = new THREE.ShaderMaterial({
 			uniforms: this.t_uniforms2,
 			vertexShader: t_vertexShader2 && t_vertexShader2.textContent ? t_vertexShader2.textContent.toString() : undefined,
 			fragmentShader: t_fragmentShader2 && t_fragmentShader2.textContent ? t_fragmentShader2.textContent.toString() : undefined
 		});
-		material2.transparent = true;
+        material2.transparent = true;
+        
 		
 		this.shaderPlane = new THREE.Mesh( new THREE.PlaneGeometry(1500, 1500), material2 );
 		this.shaderPlane.rotation.x = -Math.PI / 2;
-		this.shaderPlane.receiveShadow = true;
-		this.scene.add( this.shaderPlane );
+        this.shaderPlane.receiveShadow = true;
+        this.scene.add( this.shaderPlane );
 
 	}
 
@@ -288,32 +244,6 @@ export default class View {
 			// this.setSegaTexture(segaMini, 'Diffuse');
 			// this.setSegaTexture(segaMini, 'ior');
 		});
-		// this.porsche = this.loadGLTFModel(porscheGLTF, (porsche: any) => {
-		// 	porsche.position.set(200, 0, -200);
-		// 	porsche.scale.set(100, 100, 100);
-		// 	porsche.rotation.set(0, Math.PI / 2, 0);
-		// });
-
-		// this.godzilla = this.loadGLTFModel(godzillaGLTF, (godzilla: any) => {
-		// 	godzilla.position.set(-200, 0, -200);
-		// 	godzilla.scale.set(0.4, 0.4, 0.4);
-		// });
-
-		// this.banana = this.loadGLTFModel(bananaGLTF, (banana: any) => {
-		// 	banana.position.set(0, 127, 0);
-		// 	banana.scale.set(3, 3, 3);
-		// });
-
-		// this.rathalos = this.loadGLTFModel(rathalosGLTF, (rathalos: any) => {
-		// 	this.setObjColor(rathalos, 0xFF6B56);
-		// 	rathalos.position.set(-500, 0, 400);
-		// 	rathalos.scale.set(3, 3, 3);
-		// });
-
-		// this.bitcoin = this.loadGLTFModel(bitcoinGLTF, (bitcoin: any) => {
-		// 	bitcoin.scale.set(20, 20, 20);
-		// 	bitcoin.position.set(-200, 10, 0);
-		// });
 	}
 
 	private initGui() {
@@ -465,8 +395,6 @@ export default class View {
 		this.renderer.render(this.scene, this.camera);
 		requestAnimationFrame(() => this.render());
 
-		// this.t_uniforms[ 'time' ].value = performance.now() / 1000;
-
 		this.cube.rotation.y += this.rotateAngle;
 		this.shaderCube.rotation.y += this.rotateAngle;
 		
@@ -485,15 +413,9 @@ export default class View {
 		this.controls.update();
 		this.stats.update();
 
-		// this.renderer.clear();
-		// this.composer.render( 0.01 );
-
 	}
 
 	private onWindowResize( ) {
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
-		// this.composer.setSize( window.innerWidth, window.innerHeight );
-		// this.uniforms.u_resolution.value.x = this.renderer.domElement.width;
-		// this.uniforms.u_resolution.value.y = this.renderer.domElement.height;
 	}
 }

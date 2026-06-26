@@ -44,10 +44,6 @@ module.exports = {
                 use: 'ts-loader',
                 exclude: /node_modules/
             },
-            {
-                test: /\.(vert|frag)$/i,
-                use: 'raw-loader',
-            }
         ],
     },
     watchOptions: {
